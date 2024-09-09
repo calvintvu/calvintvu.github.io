@@ -1,0 +1,303 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+<style>
+  body {
+    padding: 100px;
+    width: 1000px;
+    margin: auto;
+    text-align: left;
+    font-weight: 300;
+    font-family: 'Open Sans', sans-serif;
+    color: #121212;
+  }
+  h1, h2, h3, h4 {
+    font-family: 'Source Sans Pro', sans-serif;
+  }
+</style>
+<title>CS 184/284A Rasterizer</title>
+<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+<link href="https://fonts.googleapis.com/css?family=Open+Sans|Source+Sans+Pro" rel="stylesheet">
+</head>
+
+
+<body>
+
+<h1>
+<!-- <a href="https://cal-cs184-student.github.io/hw-webpages-sp24-calvintvu/hw1/index.html">https://cal-cs184-student.github.io/hw-webpages-sp24-calvintvu/hw1/index.html</a>   -->
+</h1>
+
+<h1 align="middle">CS 180: Computer Vision & Computational Photography, Fall 2024</h1>
+<h1 align="middle">Project 1: Colorization</h1>
+<h2 align="middle">Calvin Vu</h2>
+
+<div align="middle">
+    <table style="width=100%">
+      <tr>
+        <td>
+          <img src="out_path/cover.jpg" align="middle" width="400px"/>
+        </td>
+    </table>
+  </div>
+
+<br><br>
+
+<div>
+
+<h2 align="middle">Background</h2>
+<p>Sergei Mikhailovich Prokudin-Gorskii (1863-1944) [Сергей Михайлович Прокудин-Горский, to his Russian friends] was a man well ahead of his time. Convinced, as early as 1907, that color photography was the wave of the future, 
+    he won Tzar's special permission to travel across the vast Russian Empire and take color photographs of everything he saw including the only color portrait of Leo Tolstoy. And he really photographed everything: people, buildings, 
+    landscapes, railroads, bridges... thousands of color pictures! His idea was simple: record three exposures of every scene onto a glass plate using a red, a green, and a blue filter. Never mind that there was no way to print color 
+    photographs until much later -- he envisioned special projectors to be installed in "multimedia" classrooms all across Russia where the children would be able to learn about their vast country. Alas, his plans never materialized: 
+    he left Russia in 1918, right after the revolution, never to return again. Luckily, his RGB glass plate negatives, capturing the last years of the Russian Empire, survived and were purchased in 1948 by the Library of Congress. The 
+    LoC has recently digitized the negatives and made them available on-line.</p>
+
+<h2 align="middle">Overview</h2>
+<p>The goal of this assignment is to take the digitized Prokudin-Gorskii glass plate images and, using image processing techniques, automatically produce a color image with as few visual artifacts as possible. In order to do this, 
+    you will need to extract the three color channel images, place them on top of each other, and align them so that they form a single RGB color image. The program will take a glass plate image as input and produce a single color 
+    image as output. The program will then divide the image into three equal parts and align the second and the third parts (e.x. G and R) to the first (B). For each image, you will need to print the (x,y) displacement vector that was 
+    used to align the parts.</p>
+
+<h2 align="middle">Section I: Single-Scale Alignment</h2>
+
+<p>We started off working with JPEG images, and since these are compressed, are often at relatively low resolutions. The easiest way to align the parts is to exhaustively search over a window of possible displacements 
+    (say [-15,15] pixels), score each one using some image matching metric, and take the displacement with the best score. There is a number of possible metrics that one could use to score how well the images match. The simplest 
+    one is just the L2 norm also known as the Euclidean Distance which is simply sqrt(sum(sum((image1-image2)^2))) where the sum is taken over the pixel values. Another is Normalized Cross-Correlation (NCC), which is simply a dot
+     product between two normalized vectors: (image1 / ||image1|| and image2 / ||image2||).
+
+<br><br>
+Since these JPEG images are small enough, we can perform this exhaustive single scale search at a relatively low cost. I tried the implementations of 3 different alignment scoring methods: L2 Norm, Normalized Cross-Correlation (NCC), and 
+structural similarity (SSIM) and found that NCC and SSIM seemed to get similar results but were better than L2 Norm. In each alignment metric scoring step, we will apply to Sobel filter on the images before scoring to help with
+edge detection instead of only having pixel intensity. After getting all 3 color channels aligned, we will merge the channels using np.dstack like so: np.dstack([aligned_red_channel, aligned_green_channel, blue_channel]). Before working
+with any image, we will crop 20% all of margins (top, bottom, left, right) from every image to remove any black bars which may skew the alignment scoring.
+</p>
+
+<div align="middle">
+    <table style="width=100%">
+      <tr>
+        <td>
+          <img src="out_path/sobel.png" align="middle" width="400px"/>
+          <figcaption align="middle">Sobel Edge Map</figcaption>
+        </td>
+    </table>
+  </div>
+
+<div align="middle">
+  <table style="width=100%">
+    <tr>
+      <td>
+        <img src="out_path/ncc_jpgs/cathedral.jpg" align="middle" width="400px"/>
+        <figcaption align="middle">cathedral.jpg: G(5, 2), R(12, 3) </figcaption>
+      </td>
+      <td>
+        <img src="out_path/ncc_jpgs/monastery.jpg" align="middle" width="400px"/>
+        <figcaption align="middle">monastery.jpg: G(-3, 2), R(3, 2)</figcaption>
+      </td>
+    </tr>
+    <br>
+    <tr>
+      <td>
+        <img src="out_path/ncc_jpgs/tobolsk.jpg" align="middle" width="400px"/>
+        <figcaption align="middle">tobolsk.jpg: G(3, 3), R(6, 3)</figcaption>
+      </td>
+    </tr>
+  </table>
+</div>
+
+<h2 align="middle">Section II: Multi-Scale Alignment</h2>
+
+<p>
+    Next, we will start working with TIF images, which are much higher quality than JPEG but that also means are often of much higher resolution. This means that our previous single-scale solution will be too expensive to be able to
+    efficiently align the color channels. This is where we can introduce a coarse-to-fine image pyramid optimization. Here is the breakdown:
+<br><br>
+    We will create a list that will store the original image at varying levels of resolution, with the original resolution being at the bottom (index 0 in this case). <br>
+    1: First, specify how many levels or how many times we want to scale our resolution down. More means a "taller" pyramid with increasingly lower resolution images.  <br>
+    2: At each level, blur the image and then scale the image to half of its current size/resolution.<br>
+    3: Append this image to our list, which is the data structure respresenting our image pyramid.<br>
+    4: Repeat for however many levels you have specified your pyramid to be.
+
+<div align="middle">
+    <table style="width=100%">
+      <tr>
+        <td>
+          <img src="out_path/pyr/0.png" align="middle" width="400px"/>
+          <figcaption align="middle">Pyramid Level 0 (highest resolution)</figcaption>
+        </td>
+        <td>
+          <img src="out_path/pyr/1.png" align="middle" width="400px"/>
+          <figcaption align="middle">Pyramid Level 1</figcaption>
+        </td>
+      </tr>
+      <br>
+      <tr>
+        <td>
+          <img src="out_path/pyr/2.png" align="middle" width="400px"/>
+          <figcaption align="middle">Pyramid Level 2</figcaption>
+        </td>
+        <td>
+            <img src="out_path/pyr/3.png" align="middle" width="400px"/>
+            <figcaption align="middle">Pyramid Level 3</figcaption>
+        </td>
+      </tr>
+      <br>
+      <td>
+        <img src="out_path/pyr/4.png" align="middle" width="400px"/>
+        <figcaption align="middle">Pyramid Level 4 </figcaption>
+      </td>
+      <td>
+        <img src="out_path/pyr/5.png" align="middle" width="400px"/>
+        <figcaption align="middle">Pyramid Level 5 (lowest resolution)</figcaption>
+      </td>
+    </tr>
+    </table>
+  </div>
+<br>
+Now that we have our image pyramid constructed, we can begin our image alignment algorithm. First, we will start at the top level of the pyramid, or the lowest resolution image. Since this image wll be smaller, we can have a 
+larger search space and still be cost-efficient. At this lower level, we will run our previous single-scale alignment algorithm (NCC/SSIM), that will give a best displacement vector. Now that we have this displacement vector as a baseline, we 
+then go down a level in the pyramid to next next higher resolution image. In this step, we will shrink the search space and run the single-scale alignment algorithm again but now we will center this smaller search space around our
+baseline best displacement vector (displacement_vector + smaller_search_space). This will then give a newly adjust best displacement vector which we will use in the next step. Since we are going up in resolution after each step,
+we will also multiply the "best" displacement vector by 2 each step to account for the doubling in resolution. Essentially, we will iterate through our image pyramid from lowest to highest resolution image, a perform a 
+single-scale alignment step at each iteration but also continuously update our best displacement vector from previous steps. We shrink the search space at each step so that as the images become higher resolution, the search space 
+does not become too expensive when aligning. At the last step, we will get a final displacement vector which we can then use to translate the original image.
+</p>
+
+<div align="middle">
+    <table style="width=100%">
+      <tr>
+        <td>
+          <img src="out_path/ssim_tifs/church.jpg" align="middle" width="400px"/>
+          <figcaption align="middle">church.jpg: G(26, 4), R(58, -4) </figcaption>
+        </td>
+        <td>
+          <img src="out_path/ssim_tifs/emir.jpg" align="middle" width="400px"/>
+          <figcaption align="middle">emir.jpg: G(50, 22), R(106, 40) </figcaption>
+        </td>
+      </tr>
+      <br>
+      <tr>
+        <td>
+          <img src="out_path/ssim_tifs/harvesters.jpg" align="middle" width="400px"/>
+          <figcaption align="middle">harvesters.jpg: G(60, 18), R(122, 14) </figcaption>
+        </td>
+        <td>
+            <img src="out_path/ssim_tifs/icon.jpg" align="middle" width="400px"/>
+            <figcaption align="middle">icon.jpg: G(42, 16), R(90, 22) </figcaption>
+        </td>
+      </tr>
+    </table>
+  </div>
+  <div align="middle">
+    <table style="width=100%">
+      <tr>
+        <td>
+          <img src="out_path/ssim_tifs/lady.jpg" align="middle" width="400px"/>
+          <figcaption align="middle">lady.jpg: G(56, 8), R(118, 12)  </figcaption>
+        </td>
+        <td>
+          <img src="out_path/ssim_tifs/melons.jpg" align="middle" width="400px"/>
+          <figcaption align="middle">melons.jpg: G(82, 12), R(178, 12) </figcaption>
+        </td>
+      </tr>
+      <br>
+      <tr>
+        <td>
+          <img src="out_path/ssim_tifs/onion_church.jpg" align="middle" width="400px"/>
+          <figcaption align="middle">onion_church.jpg: G(52, 26), R(108, 36) </figcaption>
+        </td>
+        <td>
+            <img src="out_path/ssim_tifs/sculpture.jpg" align="middle" width="400px"/>
+            <figcaption align="middle">sculpture.jpg: G(34, -10), R(140, -26) </figcaption>
+        </td>
+      </tr>
+    </table>
+  </div>
+  <div align="middle">
+    <table style="width=100%">
+      <tr>
+        <td>
+          <img src="out_path/ssim_tifs/self_portrait.jpg" align="middle" width="400px"/>
+          <figcaption align="middle">self_portrait.jpg: G(78, 28), R(176, 36)  </figcaption>
+        </td>
+        <td>
+          <img src="out_path/ssim_tifs/three_generations.jpg" align="middle" width="400px"/>
+          <figcaption align="middle">three_generations.jpg: G(56, 16), R(112, 10) </figcaption>
+        </td>
+      </tr>
+      <br>
+      <tr>
+        <td>
+          <img src="out_path/ssim_tifs/train.jpg" align="middle" width="400px"/>
+          <figcaption align="middle">train.jpg: G(42, 6), R(86, 32) </figcaption>
+        </td>
+        <td>
+            <img src="out_path/ssim_tifs/milane1.jpg" align="middle" width="400px"/>
+            <figcaption align="middle">milane1.jpg: G(48, -8), R(110, -16) </figcaption>
+          </td>
+      </tr>
+    </table>
+  </div>
+  <div align="middle">
+    <table style="width=100%">
+      <tr>
+        <td>
+          <img src="out_path/ssim_tifs/milane2.jpg" align="middle" width="400px"/>
+          <figcaption align="middle">milane2.jpg: G(58, 12), R(126, 24)  </figcaption>
+        </td>
+        <td>
+          <img src="out_path/ssim_tifs/milane3.jpg" align="middle" width="400px"/>
+          <figcaption align="middle">milane3.jpg: G(-8, -18), R(-8, -54) </figcaption>
+        </td>
+      </tr>
+    </table>
+  </div>
+
+<!-- <div align="middle">
+  <table style="width=100%">
+    <tr>
+      <td>
+        <img src="images/image1.png" align="middle" width="400px"/>
+        <figcaption align="middle">Caption goes here.</figcaption>
+      </td>
+      <td>
+        <img src="images/image2.png" align="middle" width="400px"/>
+        <figcaption align="middle">Caption goes here.</figcaption>
+      </td>
+    </tr>
+    <br>
+    <tr>
+      <td>
+        <img src="images/image3.png" align="middle" width="400px"/>
+        <figcaption align="middle">Caption goes here.</figcaption>
+      </td>
+      <td>
+        <img src="images/image4.png" align="middle" width="400px"/>
+        <figcaption align="middle">Caption goes here.</figcaption>
+      </td>
+    </tr>
+  </table>
+</div> -->
+
+<br>
+<p>
+    Most of the issues that I ran into during this project was having the alignment scoring properly. When working on the single-scale case, I found that all of my images were not aligning properly, even when adding 
+    functionality to take care of cropping black bars and using other features such as edge detection using scikit-image's Sobel filter function. The actual underlying issue was that I wasn't setting the best alignment score
+    properly so it was never being updated, meaning that it would stay at the initial alignment and would give any new displacment vector to use.
+    <br>
+    When working on the multi-scale case, I had the similar issue where every TIF image would be misaligned. Now that the alignment scoring function was fixed, I tried greatly expanding the search case, which wasn't a viable solution
+    since it would take over 20 minutes to do 1 pass of the pyramid-based alignment and a small increase in the search space would have no effect. This was where I added the similar structural scoring metric which did not change anything 
+    but did give an alternative scoring metric I can use. The actual underlying issue was that I was not properly updating my "best" displacement vector in each step of the coarse-to-fine pyramind alignment function. Originally, I 
+    just had the displacement vector be updated as (best_displacement_vector + new_search_space). Since we double the resolution of the current working image after each iteration of the image pyramid, the issue was that as we increased
+    resolution, the actual search space centered around the best displacement vector was still as if it was in the previous smaller resolution image, so it was ignoring the new pixel information in the newer higher resolution. The 
+    fix was to double the displacement vector to compensate the double of resolution.
+    <br>
+    Lastly, my initial image pyramid took advantage of OpenCV's pyramid construction function found here: <a href="https://docs.opencv.org/4.x/dc/dff/tutorial_py_pyramids.html">OpenCV Image Pyramid</a> which is not 
+    allowed since we have to construct the pyramid from scratch. I had to adapt the "cv2.PyrDown" function to use scikit-image's functions which was just to apply a blur and downscale the image.
+</p>
+
+<!-- <h2 align="middle">Section III: Art Competition</h2>
+<p>If you are not participating in the optional art competition, don't worry about this section!</p>
+
+<h3 align="middle">Part 7: Draw something interesting!</h3> -->
+
+</body>
+</html>
