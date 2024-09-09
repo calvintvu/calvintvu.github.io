@@ -112,7 +112,7 @@ with any image, we will crop 20% all of margins (top, bottom, left, right) from 
 <br><br>
     We will create a list that will store the original image at varying levels of resolution, with the original resolution being at the bottom (index 0 in this case). <br>
     1: First, specify how many levels or how many times we want to scale our resolution down. More means a "taller" pyramid with increasingly lower resolution images.  <br>
-    2: At each level, blur the image and then scale the image to half of its current size/resolution.<br>
+    2: At each level, blur the image and then downscale the image to half of its current size/resolution.<br>
     3: Append this image to our list, which is the data structure respresenting our image pyramid.<br>
     4: Repeat for however many levels you have specified your pyramid to be.
 
@@ -152,12 +152,12 @@ with any image, we will crop 20% all of margins (top, bottom, left, right) from 
     </table>
   </div>
 <br>
-Now that we have our image pyramid constructed, we can begin our image alignment algorithm. First, we will start at the top level of the pyramid, or the lowest resolution image. Since this image wll be smaller, we can have a 
-larger search space and still be cost-efficient. At this lower level, we will run our previous single-scale alignment algorithm (NCC/SSIM), that will give a best displacement vector. Now that we have this displacement vector as a baseline, we 
+Now that we have our image pyramid constructed, we can begin our image alignment algorithm. First, we will start at the top level of the pyramid, or the lowest resolution image. Since this image wll be very small, we can have a 
+larger search space and still be cost-efficient. At this lower level, we will run our previous single-scale alignment algorithm (NCC/SSIM), that will give an initial best displacement vector. Now that we have this displacement vector as a baseline, we 
 then go down a level in the pyramid to next next higher resolution image. In this step, we will shrink the search space and run the single-scale alignment algorithm again but now we will center this smaller search space around our
 baseline best displacement vector (displacement_vector + smaller_search_space). This will then give a newly adjust best displacement vector which we will use in the next step. Since we are going up in resolution after each step,
-we will also multiply the "best" displacement vector by 2 each step to account for the doubling in resolution. Essentially, we will iterate through our image pyramid from lowest to highest resolution image, a perform a 
-single-scale alignment step at each iteration but also continuously update our best displacement vector from previous steps. We shrink the search space at each step so that as the images become higher resolution, the search space 
+we will also multiply the "best" displacement vector by 2 each step to account for the doubling in resolution. Essentially, we will iterate through our image pyramid from lowest to highest resolution image, perform a 
+single-scale alignment step at each iteration but also continuously update our best displacement vector using the previous steps. We shrink the search space at each step so that as the images become higher resolution, the search space 
 does not become too expensive when aligning. At the last step, we will get a final displacement vector which we can then use to translate the original image.
 </p>
 
@@ -279,16 +279,16 @@ does not become too expensive when aligning. At the last step, we will get a fin
 
 <br>
 <p>
-    Most of the issues that I ran into during this project was having the alignment scoring properly. When working on the single-scale case, I found that all of my images were not aligning properly, even when adding 
-    functionality to take care of cropping black bars and using other features such as edge detection using scikit-image's Sobel filter function. The actual underlying issue was that I wasn't setting the best alignment score
-    properly so it was never being updated, meaning that it would stay at the initial alignment and would give any new displacment vector to use.
+    Most of the issues that I ran into during this project was having the alignment score properly. When working on the single-scale case, I found that all of my images were not aligning properly, even when adding 
+    functionality to take care of cropping black bars and using other features such as edges using scikit-image's Sobel filter function. The actual underlying issue was that I wasn't setting the best alignment score
+    properly so it was never being updated, meaning that it would stay at the initial alignment and would not give any new displacment vector to use.
     <br>
     When working on the multi-scale case, I had the similar issue where every TIF image would be misaligned. Now that the alignment scoring function was fixed, I tried greatly expanding the search case, which wasn't a viable solution
-    since it would take over 20 minutes to do 1 pass of the pyramid-based alignment and a small increase in the search space would have no effect. This was where I added the similar structural scoring metric which did not change anything 
+    since it would take over 20 minutes to do 1 pass of the pyramid-based alignment and a small increase in the search space would have virtually no effect. This was where I also tried adding the similar structural scoring metric which did not change anything 
     but did give an alternative scoring metric I can use. The actual underlying issue was that I was not properly updating my "best" displacement vector in each step of the coarse-to-fine pyramind alignment function. Originally, I 
     just had the displacement vector be updated as (best_displacement_vector + new_search_space). Since we double the resolution of the current working image after each iteration of the image pyramid, the issue was that as we increased
     resolution, the actual search space centered around the best displacement vector was still as if it was in the previous smaller resolution image, so it was ignoring the new pixel information in the newer higher resolution. The 
-    fix was to double the displacement vector to compensate the double of resolution.
+    fix was to multiply the displacement vector by 2 to compensate for the doubling in resolution.
     <br>
     Lastly, my initial image pyramid took advantage of OpenCV's pyramid construction function found here: <a href="https://docs.opencv.org/4.x/dc/dff/tutorial_py_pyramids.html">OpenCV Image Pyramid</a> which is not 
     allowed since we have to construct the pyramid from scratch. I had to adapt the "cv2.PyrDown" function to use scikit-image's functions which was just to apply a blur and downscale the image.
