@@ -1,0 +1,770 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+<style>
+  body {
+    padding: 100px;
+    width: 1000px;
+    margin: auto;
+    text-align: left;
+    font-weight: 300;
+    font-family: 'Open Sans', sans-serif;
+    color: #121212;
+  }
+  h1, h2, h3, h4 {
+    font-family: 'Source Sans Pro', sans-serif;
+  }
+</style>
+<title>CS 184/284A Rasterizer</title>
+<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+<link href="https://fonts.googleapis.com/css?family=Open+Sans|Source+Sans+Pro" rel="stylesheet">
+</head>
+
+
+<body>
+
+<h1>
+<!-- <a href="https://cal-cs184-student.github.io/hw-webpages-sp24-calvintvu/hw1/index.html">https://cal-cs184-student.github.io/hw-webpages-sp24-calvintvu/hw1/index.html</a>   -->
+</h1>
+
+<h1 align="middle">CS 180: Computer Vision & Computational Photography, Fall 2024</h1>
+<h1 align="middle">Project 2: Filters & Frequencies</h1>
+<h2 align="middle">Calvin Vu</h2>
+
+<div align="middle">
+    <table style="width=100%">
+      <tr>
+        <td>
+          <img src="images/cover.png" align="middle" width="400px"/>
+        </td>
+    </table>
+  </div>
+
+<br><br>
+
+<div>
+
+<h2 align="middle">Overview</h2>
+<p>The goal of this assignment is to start viewing images in the frequency domain. We can use the various frequencies of the image to show off some cool image processing techniques. For instance, we can extract the low frequencies
+    of one image and combine it with the high frequencies of another image and create a hybrid. We can amplify the high frequencies of an image to sharpen it and do the inverse to blur it. These are a few examples that we will showcase
+    in this project.
+</p>
+
+<h2 align="middle">Section I-I:  Finite Difference Operator</h2>
+
+<p>We will begin by using the humble finite difference as our filter in the x and y directions.
+We will show the partial derivative in x and y of the cameraman image by convolving the image with finite difference operators D_x and D_y. Next, we will compute and show the gradient magnitude image. To turn this into an edge 
+image, we will binarize the gradient magnitude image by picking the appropriate threshold (trying to suppress the noise while showing all the real edges).
+<br><br>
+To achieve this, we first convolve the original image with the differential operators giving us the partial derivatives in the x and y directions. Next, we take the image gradient by computing the square root of the sum of the squared partials.
+Lastly, we can binarize the edges by specifying a threshold and if a pixel value meets this threshold, it is at full intensity and zero otherwise.
+</p>
+
+<div align="middle">
+    <table style="width=100%">
+      <tr>
+        <td>
+          <img src="images/dxdy.png" align="middle" width="400px"/>
+          <figcaption align="middle">Difference Operator</figcaption>
+        </td>
+    </table>
+  </div>
+
+<div align="middle">
+  <table style="width=100%">
+    <tr>
+      <td>
+        <img src="images/cameraman_x.png" align="middle" width="400px"/>
+        <figcaption align="middle">Partial w.r.t. x</figcaption>
+      </td>
+      <td>
+        <img src="images/cameraman_y.png" align="middle" width="400px"/>
+        <figcaption align="middle">Partial w.r.t. y</figcaption>
+      </td>
+    </tr>
+    <br>
+    <tr>
+    <td>
+        <img src="images/cameraman_edge.png" align="middle" width="400px"/>
+        <figcaption align="middle">Edge Map</figcaption>
+        </td>
+        <td>
+        <img src="images/cameraman_grad.png" align="middle" width="400px"/>
+        <figcaption align="middle">Gradient Map</figcaption>
+        </td>
+        <img src="images/cameraman.png" align="middle" width="400px"/>
+        <figcaption align="middle">Original Image</figcaption>
+        </td>
+    </tr>
+  </table>
+</div>
+
+<h2 align="middle">Section I-II: Derivative of Gaussian (DoG) Filter</h2>
+
+<p>
+    Our previous results show that the images and maps ended up quite noisy.  Luckily, we have a smoothing operator handy: the Gaussian filter G. First, we will create a blurred version of the original image by convolving with a 
+    gaussian and repeat the procedure in the previous part. We can achieve this by creating a 2D gaussian filter with cv2.getGaussianKernel() to create a 1D gaussian and then take the outer product with its transpose to get a 2D 
+    gaussian kernel. After convolving the image with this gaussian kernel, we will convolve again using the previous differential operators like in the last section to get a map of the partial derivatives, gradient, and edges.
+    
+    <div align="middle">
+      <table style="width=100%">
+        <tr>
+          <td>
+            <img src="images/cameraman_xf.png" align="middle" width="400px"/>
+            <figcaption align="middle">Partial w.r.t. x (filtered)</figcaption>
+          </td>
+          <td>
+            <img src="images/cameraman_yf.png" align="middle" width="400px"/>
+            <figcaption align="middle">Partial w.r.t. y (filtered) </figcaption>
+          </td>
+        </tr>
+        <br>
+        <tr>
+        <td>
+            <img src="images/cameraman_ef.png" align="middle" width="400px"/>
+            <figcaption align="middle">Edge Map (filtered) </figcaption>
+            </td>
+            <td>
+            <img src="images/cameraman_gf.png" align="middle" width="400px"/>
+            <figcaption align="middle">Gradient Map (filtered, a little dark) </figcaption>
+            </td>
+            <img src="images/cameraman_f.png" align="middle" width="400px"/>
+            <figcaption align="middle">Original Image (filtered)</figcaption>
+            </td>
+        </tr>
+      </table>
+    </div>
+</p>
+<p>
+    By prefiltering the image, we see the our processed are much smoother and do not contain as much aliasing as the images without the preprocessing. In addition, if we convolve the gaussian filter G with the differential operator
+    first and then the image, we observe that the results are the same as above with  blurring with the gaussian first then taking the differential.
+    <div align="middle">
+        <table style="width=100%">
+          <tr>
+            <td>
+              <img src="images/camera_dogx.png" align="middle" width="400px"/>
+              <figcaption align="middle">Partial w.r.t. x (DoG)</figcaption>
+            </td>
+            <td>
+                <img src="images/camera_dogy.png" align="middle" width="400px"/>
+                <figcaption align="middle">Partial w.r.t. y (DoG)</figcaption>
+              </td>
+          </tr>
+          <tr>
+            <td>
+              <img src="images/camera_doge.png" align="middle" width="400px"/>
+              <figcaption align="middle">Edge Map (DoG) </figcaption>
+            </td>
+            <td>
+                <img src="images/camera_dogg.png" align="middle" width="400px"/>
+                <figcaption align="middle">Gradient Map (DoG, a little dark) </figcaption>
+              </td>
+          </tr>
+        </table>
+      </div>
+</p>
+
+<!-- <h2 align="middle">Section III: Art Competition</h2>
+<p>If you are not participating in the optional art competition, don't worry about this section!</p>
+
+<h3 align="middle">Part 7: Draw something interesting!</h3> -->
+<h2 align="middle">Section II-I:  Image Sharpening</h2>
+
+<p>In this section, we will discuss how to "sharpen" an image. Essentially, we want to emphasize the high frequencies of an image to increase detail in certain areas of the image. An image often looks sharper if it has stronger high 
+    frequencies. 
+<br><br>
+To achieve this, we will first separate the image into its 3 separate color channels: R, G, B. Then we convolve each channel with the gaussian filter used previously. We can consider this a low pass filter from now on since it only
+retains the low frequencies of the image. Next, we will subtract these low frequencies from the original frequencies: high_frequencies = original_frequencies - low_frequencies. Next, we will add these high frequencies to the original
+image multiple by some sharpening factor alpha: sharpened_image = original_frequencies + alpha * high_frequencies (after stacking the 3 channels back together).
+</p>
+<div align="middle">
+    <table style="width=100%">
+      <tr>
+        <td>
+          <img src="images/sharpenex_highf.png" align="middle" width="400px"/>
+          <figcaption align="middle">High Frequencies</figcaption>
+        </td>
+        <td>
+          <img src="images/sharpenex_s.png" align="middle" width="400px"/>
+          <figcaption align="middle">Sharpened, alpha=2, kernel=10, sigma=10/6</figcaption>
+        </td>
+      </tr>
+      <br>
+      <tr>
+      <td>
+          </td>
+          <td>
+          </td>
+          <img src="images/sharpenex_o.png" align="middle" width="400px"/>
+          <figcaption align="middle">Original Image</figcaption>
+          </td>
+      </tr>
+      <tr>
+        <td>
+            <img src="images/taj_s4.png" align="middle" width="400px"/>
+            <figcaption align="middle">Sharpened, alpha=4, kernel=10, sigma=10/6</figcaption>
+          </td>
+          <td>
+            <img src="images/taj_s6.png" align="middle" width="400px"/>
+            <figcaption align="middle">Sharpened, alpha=6, kernel=10, sigma=10/6</figcaption>
+          </td>
+      </tr>
+    </table>
+  </div>
+  <div align="middle">
+    <table style="width=100%">
+      <tr>
+        <td>
+          <img src="images/sharpenex2_o.png" align="middle" width="400px"/>
+          <figcaption align="middle">Original</figcaption>
+        </td>
+        <td>
+          <img src="images/sharpenex2_s.png" align="middle" width="400px"/>
+          <figcaption align="middle">Sharpened, alpha=2, kernel=10, sigma=10/6</figcaption>
+        </td>
+      </tr>
+      <tr>
+        <td>
+            <img src="images/sharpenex2_s4.png" align="middle" width="400px"/>
+            <figcaption align="middle">Sharpened, alpha=4, kernel=10, sigma=10/6</figcaption>
+          </td>
+          <td>
+            <img src="images/sharpenex2_s6.png" align="middle" width="400px"/>
+            <figcaption align="middle">Sharpened, alpha=6, kernel=10, sigma=10/6</figcaption>
+          </td>
+      </tr>
+      <br>
+      <tr>
+        <td>
+          <img src="images/sharpenex3_o.png" align="middle" width="400px"/>
+          <figcaption align="middle">Original</figcaption>
+        </td>
+        <td>
+            <img src="images/sharpenex3_s.png" align="middle" width="400px"/>
+            <figcaption align="middle">Sharpened, alpha=2, kernel=10, sigma=10/6</figcaption>
+        </td>
+        <tr>
+            <td>
+                <img src="images/sharpenex3_s4.png" align="middle" width="400px"/>
+                <figcaption align="middle">Sharpened, alpha=4, kernel=10, sigma=10/6</figcaption>
+            </td>
+            <td>
+                <img src="images/sharpenex3_s6.png" align="middle" width="400px"/>
+                <figcaption align="middle">Sharpened, alpha=6, kernel=10, sigma=10/6</figcaption>
+            </td>
+        </tr>
+      </tr>
+    </table>
+  </div>
+
+  <h2 align="middle">Section II-II:  Hybrid Images</h2>
+
+  <p>In this section, the goal is to create hybrid images using the approach described in the SIGGRAPH 2006 paper by Oliva, Torralba, and Schyns. Hybrid images are static images that change in interpretation as a function of the 
+    viewing distance. The basic idea is that high frequency tends to dominate perception when it is available, but, at a distance, only the low frequency (smooth) part of the signal can be seen. By blending the high frequency 
+    portion of one image with the low-frequency portion of another, you get a hybrid image that leads to different interpretations at different distances.
+  <br><br>
+  To achieve this, we first need to get 2 images that we want to combine into a hybrid image. We might need to align both if necessary. First, we will perform a low pass filter on one image, which is just taking the gaussian filter used
+  previously and blurring the image. Next, we will perform a high pass filter on the second image, which is the processing of sharpening done previously, where we extract the low frequencies using the low pass filter and subtract from 
+  the original image to get the high frequencies (alpha * (image - low_pass_filter(image, kernel_size, sigma))). After we process both images where one is blurred and one is sharpened, we will average both images together and get our
+  hybrid image.
+  </p>
+
+  <div align="middle">
+    <table style="width=100%">
+      <tr>
+        <td>
+          <img src="images/hybrid1_1.png" align="middle" width="400px"/>
+          <figcaption align="middle">Image 1</figcaption>
+        </td>
+        <td>
+          <img src="images/hybrid1_2.png" align="middle" width="400px"/>
+          <figcaption align="middle">Image 2</figcaption>
+        </td>
+      </tr>
+      <br>
+      <tr>
+      <td>
+          </td>
+          <td>
+          </td>
+          <img src="images/hybrid1.png" align="middle" width="400px"/>
+          <figcaption align="middle">Hybrid Image</figcaption>
+          </td>
+      </tr>
+    </table>
+  </div>
+
+  <div align="middle">
+    <table style="width=100%">
+      <tr>
+        <td>
+          <img src="images/cloud.png" align="middle" width="400px"/>
+          <figcaption align="middle">Image 1 (Cloud)</figcaption>
+        </td>
+        <td>
+          <img src="images/tifa.png" align="middle" width="400px"/>
+          <figcaption align="middle">Image 2 (Tifa)</figcaption>
+        </td>
+      </tr>
+      <br>
+      <tr>
+      <td>
+          </td>
+          <td>
+          </td>
+          <img src="images/cloti.png" align="middle" width="400px"/>
+          <figcaption align="middle">Hybrid Image</figcaption>
+          </td>
+      </tr>
+    </table>
+  </div>
+
+  <br><br>
+  Below is the fourier analysis for (Cloud & Tifa) the original images, filtered images, and the hybrid images above.
+
+  <div align="middle">
+    <table style="width=100%">
+      <tr>
+        <td>
+          <img src="images/fft_im1.png" align="middle" width="400px"/>
+          <figcaption align="middle">FFT of Image 1</figcaption>
+        </td>
+        <td>
+          <img src="images/fft_im2.png" align="middle" width="400px"/>
+          <figcaption align="middle">FFT of Image 2</figcaption>
+        </td>
+      </tr>
+      <br>
+      <tr>
+        <td>
+          <img src="images/fft_lp.png" align="middle" width="400px"/>
+          <figcaption align="middle">FFT of Low Pass Image (blurred)</figcaption>
+        </td>
+        <td>
+            <img src="images/fft_hp.png" align="middle" width="400px"/>
+            <figcaption align="middle">FFT of High Pass Image (sharpened)</figcaption>
+        </td>
+      </tr>
+    </table>
+  </div>
+  <div align="middle">
+    <table style="width=100%">
+      <tr>
+        <td>
+          <img src="images/fft_hybrid.png" align="middle" width="400px"/>
+          <figcaption align="middle">FFT of Hybrid Image</figcaption>
+        </td>
+      </tr>
+    </table>
+  </div>
+  <br><br>
+  Below is a failed hybrid image attempt where I could not really get a balance between the two where one it is 
+  readable possibly from the photorealistic details of the face contrasted with the clean angles and lower details of the emoji.
+
+  <div align="middle">
+    <table style="width=100%">
+      <tr>
+        <td>
+          <img src="images/hybridfail1.png" align="middle" width="400px"/>
+          <figcaption align="middle">Image 1 (failure), kernel=24, sigma=4</figcaption>
+        </td>
+        <td>
+          <img src="images/hybridfail2.png" align="middle" width="400px"/>
+          <figcaption align="middle">Image 2 (failure), kernel=48, sigma=8</figcaption>
+        </td>
+      </tr>
+      <br>
+      <tr>
+      <td>
+          </td>
+          <td>
+          </td>
+          <img src="images/hybridfail.png" align="middle" width="400px"/>
+          <figcaption align="middle">Hybrid Image (failure), alpha=1</figcaption>
+          </td>
+      </tr>
+    </table>
+  </div>
+
+  <h2 align="middle">Section II-III: Gaussian and Laplacian Stacks</h2>
+
+  <p>In this section, we will implement Gaussian and Laplacian stacks, which are kind of like pyramids but without the downsampling
+  <br><br>
+  To achieve this, we first need to specify how many levels we want our stack to be (the levels of our Laplacian stack will be determined by our Gaussian stack). To implement our Gaussian stack, we will use a list again as our 
+  data structure representing the stack. We will take our original image and make that the first element of our stack. Next, we will iterate by the number of levels that we specified and in each iteration, we will apply a low pass filter
+  on the image continuously, so with the each iteration, the current image will get blurrier. In each iterator, we will add that blurred image at that level to the list and that will be the image represented at that particular 
+  Gaussian stack level.
+  <br><br>
+  Now, that we have our Gaussian stack, we can start creating our Laplacian stack. We will start by iterating
+  through our Gaussian stack and stop at the second to last level. We will also represent our Laplacian stack
+  as a list. On each iteration, we will take the current image (at level i) and the next image (at level i + 1) and
+  then subtract the next image from the current image (laplacian = cur_im - next_im). We will add this image
+  to our list and that will represent the particular level in the laplacian stack. Lastly, we will add the last 
+  element of the Gaussian stack to our Laplacian stack. 
+  </p>
+
+  <div align="middle">
+    <table style="width=100%">
+      <tr>
+        <td>
+          <img src="images/apple_g0.png" align="middle" width="400px"/>
+          <figcaption align="middle">apple: Gaussian Stack 0</figcaption>
+        </td>
+        <td>
+          <img src="images/apple_l0.png" align="middle" width="400px"/>
+          <figcaption align="middle">apple: Laplacian Stack 0 (Normalized for Visualization)</figcaption>
+        </td>
+      </tr>
+      <br>
+      <tr>
+        <td>
+          <img src="images/apple_g1.png" align="middle" width="400px"/>
+          <figcaption align="middle">apple: Gaussian Stack 1 </figcaption>
+        </td>
+        <td>
+            <img src="images/apple_l1.png" align="middle" width="400px"/>
+            <figcaption align="middle">apple: Laplacian Stack 1 (Normalized for Visualization)</figcaption>
+        </td>
+      </tr>
+    </table>
+  </div>
+  <div align="middle">
+    <table style="width=100%">
+      <tr>
+        <td>
+          <img src="images/apple_g2.png" align="middle" width="400px"/>
+          <figcaption align="middle">apple: Gaussian Stack 2</figcaption>
+        </td>
+        <td>
+          <img src="images/apple_l2.png" align="middle" width="400px"/>
+          <figcaption align="middle">apple: Laplacian Stack 2 (Normalized for Visualization)</figcaption>
+        </td>
+      </tr>
+      <br>
+      <tr>
+        <td>
+          <img src="images/apple_g3.png" align="middle" width="400px"/>
+          <figcaption align="middle">apple: Gaussian Stack 3</figcaption>
+        </td>
+        <td>
+            <img src="images/apple_l3.png" align="middle" width="400px"/>
+            <figcaption align="middle">apple: Laplacian Stack 3 (Normalized for Visualization)</figcaption>
+        </td>
+      </tr>
+    </table>
+  </div>
+  <div align="middle">
+    <table style="width=100%">
+      <tr>
+        <td>
+          <img src="images/apple_g4.png" align="middle" width="400px"/>
+          <figcaption align="middle">apple: Gaussian Stack 4</figcaption>
+        </td>
+        <td>
+          <img src="images/apple_l4.png" align="middle" width="400px"/>
+          <figcaption align="middle">apple: Laplacian Stack 4 (Normalized for Visualization)</figcaption>
+        </td>
+      </tr>
+      <br>
+    </table>
+  </div>
+<!-- orange below -->
+
+  <div align="middle">
+    <table style="width=100%">
+      <tr>
+        <td>
+          <img src="images/orange_g0.png" align="middle" width="400px"/>
+          <figcaption align="middle">orange: Gaussian Stack 0</figcaption>
+        </td>
+        <td>
+          <img src="images/orange_l0.png" align="middle" width="400px"/>
+          <figcaption align="middle">orange: Laplacian Stack 0 (Normalized for Visualization)</figcaption>
+        </td>
+      </tr>
+      <br>
+      <tr>
+        <td>
+          <img src="images/orange_g1.png" align="middle" width="400px"/>
+          <figcaption align="middle">orange: Gaussian Stack 1 </figcaption>
+        </td>
+        <td>
+            <img src="images/orange_l1.png" align="middle" width="400px"/>
+            <figcaption align="middle">orange: Laplacian Stack 1 (Normalized for Visualization)</figcaption>
+        </td>
+      </tr>
+    </table>
+  </div>
+  <div align="middle">
+    <table style="width=100%">
+      <tr>
+        <td>
+          <img src="images/orange_g2.png" align="middle" width="400px"/>
+          <figcaption align="middle">orange: Gaussian Stack 2</figcaption>
+        </td>
+        <td>
+          <img src="images/orange_l2.png" align="middle" width="400px"/>
+          <figcaption align="middle">orange: Laplacian Stack 2 (Normalized for Visualization)</figcaption>
+        </td>
+      </tr>
+      <br>
+      <tr>
+        <td>
+          <img src="images/orange_g3.png" align="middle" width="400px"/>
+          <figcaption align="middle">orange: Gaussian Stack 3</figcaption>
+        </td>
+        <td>
+            <img src="images/orange_l3.png" align="middle" width="400px"/>
+            <figcaption align="middle">orange: Laplacian Stack 3 (Normalized for Visualization)</figcaption>
+        </td>
+      </tr>
+    </table>
+  </div>
+  <div align="middle">
+    <table style="width=100%">
+      <tr>
+        <td>
+          <img src="images/orange_g4.png" align="middle" width="400px"/>
+          <figcaption align="middle">orange: Gaussian Stack 4</figcaption>
+        </td>
+        <td>
+          <img src="images/orange_l4.png" align="middle" width="400px"/>
+          <figcaption align="middle">orange: Laplacian Stack 4 (Normalized for Visualization)</figcaption>
+        </td>
+      </tr>
+      <br>
+    </table>
+  </div>
+
+
+<h2 align="middle">Section II-IV: Multiresolution Blending</h2>
+
+<p> A cool thing we can do with gaussian and laplacian stacks is that we can blend images together. However,
+    if we want to put one half of the apple and one half of the orange together, we find that there is still a 
+    clear seam down the middle. In the pyramid case the downsampling/blurring/upsampling steps ends up blurring 
+    the abrupt seam proposed in this algorithm, but we are using stacks so these steps do not apply.
+    <div align="middle">
+        <table style="width=100%">
+          <tr>
+            <td>
+              <img src="images/blendbad.png" align="middle" width="400px"/>
+              <figcaption align="middle">Initial Oraple</figcaption>
+            </td>
+          </tr>
+          <br>
+        </table>
+      </div>
+<br><br>
+To remedy this, we will use a mask. The Gaussian blurring of the mask in the pyramid will smooth out the 
+transition between the two images. For the vertical or horizontal seam, your mask will simply be a step function 
+of the same size as the original images. 
+<div align="middle">
+    <table style="width=100%">
+      <tr>
+        <td>
+          <img src="images/mask.png" align="middle" width="400px"/>
+          <figcaption align="middle">Vertical Seam Mask</figcaption>
+        </td>
+        <td>
+            <img src="images/blendgood.png" align="middle" width="400px"/>
+            <figcaption align="middle">Oraple using mask</figcaption>
+          </td>
+      </tr>
+      <br>
+    </table>
+  </div>
+<br><br>
+  To achieve this, we will take our two images again and create gaussian and laplacian stacks for both. Next,
+  we will create our mask, which is an image of the same dimensions where each pixel is either 0 (black) or 1 (white)
+  and the transition from white to black will determine where the transitions between the two images will happen.
+  We then create a gaussian stack for the mask, so now we have a total of 3 gaussian stacks and 2 laplacian stacks 
+  for the two images we're blending.
+  <br><br>
+  Now that we have all our stacks (which all have the same number of levels), we will iterate through the number of levels. 
+  In each iteration i (or level i), we will take the image at that level in the 2 laplacian stacks 
+  for the images we want to blend, and the image in the gaussian stack for the mask and perform this operation:
+  <br><br>
+  (1 - mask_gaussian[i]) * laplacian_image1[i] + mask_gaussian[i] * laplacian_image2[i]
+  <br><br>
+  We will do this calculation at each iteration and add each up to make the final blended image:
+  <br><br>
+  blended = (1 - mask_gaussian) * laplacian_image1 + mask_gaussian * laplacian_image2
+  <br><br>
+  Now my roommates can fulfill their action movie star dreams!
+  <div align="middle">
+    <table style="width=100%">
+      <tr>
+        <td>
+          <img src="images/sherwin.png" align="middle" width="400px"/>
+          <figcaption align="middle">Image 1</figcaption>
+        </td>
+        <td>
+          <img src="images/batman.png" align="middle" width="400px"/>
+          <figcaption align="middle">Image 2</figcaption>
+        </td>
+      </tr>
+      <br>
+      <tr>
+        <td>
+          <img src="images/sherwinmask.png" align="middle" width="400px"/>
+          <figcaption align="middle">Mask</figcaption>
+        </td>
+        <td>
+            <img src="images/batsherwin.png" align="middle" width="400px"/>
+            <figcaption align="middle">Blended Image</figcaption>
+        </td>
+      </tr>
+    </table>
+  </div>
+
+  <!--  laplacian stuff  -->
+    Laplacian stacks for blended image above.
+  <div align="middle">
+    <table style="width=100%">
+      <tr>
+        <td>
+          <img src="images/bat_l1.png" align="middle" width="100%"/>
+          <figcaption align="middle">Level 0</figcaption>
+        </td>
+        <td>
+          <img src="images/sherwin_l0.png" align="middle" width="100%"/>
+          <figcaption align="middle">Level 0</figcaption>
+        </td>
+        <td>
+            <img src="images/batsherwin_l0.png" align="middle" width="100%"/>
+            <figcaption align="middle">Level 0</figcaption>
+          </td>
+      </tr>
+      <br>
+    </table>
+  </div>
+  <div align="middle">
+    <table style="width=100%">
+      <tr>
+        <td>
+          <img src="images/bat_l2.png" align="middle" width="100%"/>
+          <figcaption align="middle">Level 1</figcaption>
+        </td>
+        <td>
+          <img src="images/sherwin_l1.png" align="middle" width="100%"/>
+          <figcaption align="middle">Level 1</figcaption>
+        </td>
+        <td>
+            <img src="images/batsherwin_l1.png" align="middle" width="100%"/>
+            <figcaption align="middle">Level 1</figcaption>
+          </td>
+      </tr>
+      <br>
+    </table>
+  </div>
+  <div align="middle">
+    <table style="width=100%">
+      <tr>
+        <td>
+          <img src="images/bat_l3.png" align="middle" width="100%"/>
+          <figcaption align="middle">Level 2</figcaption>
+        </td>
+        <td>
+          <img src="images/sherwin_l2.png" align="middle" width="100%"/>
+          <figcaption align="middle">Level 2</figcaption>
+        </td>
+        <td>
+            <img src="images/batsherwin_l2.png" align="middle" width="100%"/>
+            <figcaption align="middle">Level 2</figcaption>
+          </td>
+      </tr>
+      <br>
+    </table>
+  </div>
+  <div align="middle">
+    <table style="width=100%">
+      <tr>
+        <td>
+          <img src="images/bat_l4.png" align="middle" width="100%"/>
+          <figcaption align="middle">Level 3</figcaption>
+        </td>
+        <td>
+          <img src="images/sherwin_l3.png" align="middle" width="100%"/>
+          <figcaption align="middle">Level 3</figcaption>
+        </td>
+        <td>
+            <img src="images/batsherwin_l3.png" align="middle" width="100%"/>
+            <figcaption align="middle">Level 3</figcaption>
+          </td>
+      </tr>
+      <br>
+    </table>
+  </div>
+  <div align="middle">
+    <table style="width=100%">
+      <tr>
+        <td>
+          <img src="images/bat_l5.png" align="middle" width="100%"/>
+          <figcaption align="middle">Level 4</figcaption>
+        </td>
+        <td>
+          <img src="images/sherwin_l4.png" align="middle" width="100%"/>
+          <figcaption align="middle">Level 4</figcaption>
+        </td>
+        <td>
+            <img src="images/batsherwin_l4.png" align="middle" width="100%"/>
+            <figcaption align="middle">Level 4</figcaption>
+          </td>
+      </tr>
+      <br>
+    </table>
+  </div>
+
+
+  <div align="middle">
+    <table style="width=100%">
+      <tr>
+        <td>
+          <img src="images/pos.png" align="middle" width="400px"/>
+          <figcaption align="middle">Image 1</figcaption>
+        </td>
+        <td>
+          <img src="images/bond.png" align="middle" width="400px"/>
+          <figcaption align="middle">Image 2</figcaption>
+        </td>
+      </tr>
+      <br>
+      <tr>
+        <td>
+          <img src="images/posmask.png" align="middle" width="400px"/>
+          <figcaption align="middle">Mask</figcaption>
+        </td>
+        <td>
+            <img src="images/bondpos.png" align="middle" width="400px"/>
+            <figcaption align="middle">Blended Image</figcaption>
+        </td>
+      </tr>
+    </table>
+  </div>
+  <div align="middle">
+    <table style="width=100%">
+      <tr>
+        <td>
+          <img src="images/zaddy.png" align="middle" width="400px"/>
+          <figcaption align="middle">Image 1</figcaption>
+        </td>
+        <td>
+          <img src="images/miposter.png" align="middle" width="400px"/>
+          <figcaption align="middle">Image 2</figcaption>
+        </td>
+      </tr>
+      <br>
+      <tr>
+        <td>
+          <img src="images/zaddymask.png" align="middle" width="400px"/>
+          <figcaption align="middle">Mask</figcaption>
+        </td>
+        <td>
+            <img src="images/mizaddy.png" align="middle" width="400px"/>
+            <figcaption align="middle">Blended Image</figcaption>
+        </td>
+      </tr>
+    </table>
+  </div>
+</body>
+</html>
