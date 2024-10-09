@@ -1,0 +1,333 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+<style>
+  body {
+    padding: 100px;
+    width: 1000px;
+    margin: auto;
+    text-align: left;
+    font-weight: 300;
+    font-family: 'Open Sans', sans-serif;
+    color: #121212;
+  }
+  h1, h2, h3, h4 {
+    font-family: 'Source Sans Pro', sans-serif;
+  }
+</style>
+<title>CS 184/284A Rasterizer</title>
+<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+<link href="https://fonts.googleapis.com/css?family=Open+Sans|Source+Sans+Pro" rel="stylesheet">
+</head>
+
+
+<body>
+
+<h1>
+<!-- <a href="https://cal-cs184-student.github.io/hw-webpages-sp24-calvintvu/hw1/index.html">https://cal-cs184-student.github.io/hw-webpages-sp24-calvintvu/hw1/index.html</a>   -->
+</h1>
+
+<h1 align="middle">CS 180: Computer Vision & Computational Photography, Fall 2024</h1>
+<h1 align="middle">Project 3: Face Morphing and Modelling a Photo Collection</h1>
+<h2 align="middle">Calvin Vu</h2>
+
+<div align="middle">
+    <table style="width=100%">
+      <tr>
+        <td>
+          <img src="images/cover.gif" align="middle" width="400px"/>
+        </td>
+    </table>
+  </div>
+
+<br><br>
+
+<div>
+
+<h2 align="middle">Overview</h2>
+<p>In this assignment we will produce a "morph" animation of our faces into someone else's face, compute the mean of a population of faces and extrapolate from a population mean to create a caricature of ourselves.
+</p>
+
+<h2 align="middle">Section I:  Defining Correspondences</h2>
+
+<p>First, if we want to be able to morph two images together, we need to create a mapping between the two images, specifically we need to extract a list of coordinates that represent the facial landmarks that are the same between both
+    the images such as eyes, nose and mouth. Fortunately, a previous student created a handy tool that will allow us to easily generate a correspondence map between two images. The link to the tool is 
+    <a href="https://cal-cs180.github.io/fa23/hw/proj3/tool.html">here</a>.
+<br><br>
+Now that we have our list of correspondences, we now need to compute a triangulation between all of these points. The Delaunay triangulation algorithm is a good choice since it does not produce overly skinny triangles. We only want to 
+compute this triangulation once since we want it to be consistent throughout the morph. This means we should compute it on an average image or any image in between. We can use Scipy's Delaunay function on our list of correspondences
+to get the triangulation. For the sake of visualization, lets compute this
+triangulation on both of our chosen images.
+</p>
+
+
+<div align="middle">
+  <table style="width=100%">
+    <tr>
+      <td>
+        <img src="images/clooneytri.png" align="middle" width="400px"/>
+        <figcaption align="middle">Delaunay Triangulation on Image 1</figcaption>
+      </td>
+      <td>
+        <img src="images/ledgertri.png" align="middle" width="400px"/>
+        <figcaption align="middle">Delaunay Triangulation on Image 2</figcaption>
+      </td>
+    </tr>
+    <br>
+    <tr>
+    </tr>
+  </table>
+</div>
+
+<h2 align="middle">Section II:  Computing the "Mid-way Face"</h2>
+
+<p>
+    Like previously mentioned, we do not want to compute multiple triangulations so for this section, lets 
+    take the average of the two images. After computing the Delaunay triangulation on the average of the two images,
+    we need to compute an affine transform to change the triangulation of both images. We can iterate through 
+    the triangles in the triangulation and for each index or triangle, we take the current index of the average 
+    shape, correpsondence for image 1, and the correpsondence for image 2. Using these, we can then compute 
+    the affine transform but that particular point on image 1 and image 2 using the corresponding point on the 
+    averaged image. We use these points to create two matrices allowing us to use Numpy's least squares function to
+    solve the matrix equation.
+    <br><br>
+    After, using the image dimensions we can create an output array for our output image. Then for each triangle
+    again, we will get the pixel location of our output image that is in the averaged image using the previously
+    computed affine transformations. Then since we need to blend the images, we can use a bilinear interpolation
+    to get the correct color values from the input images. In order to blend the color values together, we can define a
+    warp factor to calculate: colors = (1 - warp_frac) * image1 + warp_frac * image2. Since we want the midpoint,
+    we can use a warp factor of 0.5.
+    
+    <div align="middle">
+        <table style="width=100%">
+          <tr>
+            <td>
+              <img src="images/clooney.jpg" align="middle" width="400px"/>
+              <figcaption align="middle">Image 1</figcaption>
+            </td>
+            <td>
+              <img src="images/ledger.jpg" align="middle" width="400px"/>
+              <figcaption align="middle">Image 2</figcaption>
+            </td>
+          </tr>
+          <br>
+          <tr>
+          <td>
+              </td>
+              <td>
+              </td>
+              <img src="images/midway.png" align="middle" width="400px"/>
+              <figcaption align="middle">Mid-way face</figcaption>
+              </td>
+          </tr>
+        </table>
+      </div>
+</p>
+<p>
+</p>
+
+<!-- <h2 align="middle">Section III: Art Competition</h2>
+<p>If you are not participating in the optional art competition, don't worry about this section!</p>
+
+<h3 align="middle">Part 7: Draw something interesting!</h3> -->
+<h2 align="middle">Section III:  The Morph Sequence</h2>
+
+<p>From the previous section, we now have one iteration of the morph function we want only for one frame. To generate 
+    a morph sequence we can just reuse the previous alogrithm, but throughout a range of images or frames, rather than just one 
+    while adjusting some parameters. In addition to the warp factor, we now need a dissolve factor. Rather than
+    using an average image now, we need to compute an intermediary image that is different for every iteration. First,
+    lets define how many frames we want in our morph sequence. For each frame, our warp factor will be the current 
+    frame index divided by the number of frames minus one. The dissolve factor will be the warp factor. Then, to 
+    get the intermidiary image, we can find (1 - warp) * img1_correspondences + warp_frac * im2_correspondences. 
+    Then we do this for however many frames we define and collect each frame into a sequence of frames which will be 
+    our morph sequence. 
+</p>
+<div align="middle">
+    <table style="width=100%">
+      <tr>
+        <td>
+          <img src="images/morph.gif" align="middle" width="400px"/>
+          <figcaption align="middle">Morph Sequence</figcaption>
+        </td>
+    </table>
+  </div>
+
+  <h2 align="middle">Section IV:  The "Mean face" of a population</h2>
+
+  <p>In this section, we will take a dataset of faces with keypoints to compute an average face. First, lets collect 
+    list of facial keypoints for each image and take the average of these keypoints to get an average face shape. 
+    To warp one face to the average shape, we can do what I have accomplished before with morphing. First, compute 
+    a triangulation on the average face shape, compute the affine transformation using the coordinates from the 
+    average face shape and the face you want to warp, process each triangle and then map the pixels from the input 
+    image to the output image. With this, we can warp any face to the average face shape and the average face 
+    shape to any shape by picking what we define as the "average" shape to calculate our triangulation on. To get the 
+    actual average face rather than just one warped face, we have to morph every face in the dataset to the average 
+    face shape of that dataset then average out those morphed faces. Morphing my face onto the average and the average onto
+    my face generated some pretty goofy results which may be a result of the correpsondence points I picked out for my own face as
+    well as the difference in cropping and alignment.
+  </p>
+
+  <div align="middle">
+    <table style="width=100%">
+      <tr>
+        <td>
+          <img src="images/avgfacenomorph.png" align="middle" width="400px"/>
+          <figcaption align="middle">Average of faces, no morphing.</figcaption>
+        </td>
+        <td>
+          <img src="images/avgshapeplot.png" align="middle" width="400px"/>
+          <figcaption align="middle">Plot of average face shape.</figcaption>
+        </td>
+      </tr>
+      </tr>
+    </table>
+  </div>
+  <div align="middle">
+    <table style="width=100%">
+      <tr>
+        <td>
+          <img src="images/avgfacemorph.png" align="middle" width="400px"/>
+          <figcaption align="middle">Average of faces, morphed.</figcaption>
+        </td>
+        <td>
+            <img src="images/avgfacesmile1.png" align="middle" width="400px"/>
+            <figcaption align="middle">Average of faces, morphed.</figcaption>
+          </td>
+      </tr>
+    </table>
+  </div>
+  <div align="middle">
+    <table style="width=100%">
+      <tr>
+        <td>
+          <img src="images/someavgmorphedfaces.png" align="middle" width="800px"/>
+          <figcaption align="middle">Some examples of faces from the dataset morphed to average face shape.</figcaption>
+        </td>
+      </tr>
+    </table>
+  </div>
+  <div align="middle">
+    <table style="width=100%">
+      <tr>
+        <td>
+          <img src="images/avgfacesmile.png" align="middle" width="800px"/>
+          <figcaption align="middle">Some examples of faces from the dataset morphed to average face shape.</figcaption>
+        </td>
+      </tr>
+    </table>
+  </div>
+
+  <div align="middle">
+    <table style="width=100%">
+      <tr>
+        <td>
+          <img src="images/myface.png" align="middle" width="400px"/>
+          <figcaption align="middle">My Face</figcaption>
+        </td>
+        <td>
+          <img src="images/myfaceonavg.png" align="middle" width="400px"/>
+          <figcaption align="middle">My Face On Average Face</figcaption>
+        </td>
+      </tr>
+      <br>
+      <tr>
+        <td>
+          <img src="images/avgfaceonmyface.png" align="middle" width="400px"/>
+          <figcaption align="middle">Average Face On My Face</figcaption>
+        </td>
+      </tr>
+    </table>
+  </div>
+
+  <h2 align="middle">Section V: Caricatures: Extrapolating from the Mean</h2>
+
+  <p>In this section, using the population mean dataset, we can create a caricature of our faces by extrapolating 
+    the features from the population mean. We can define an alpha value that will determine how much of the features 
+    from the population mean will be exaggerated. An alpha of 1 and greater means it is close to my face and features of the 
+    caricature are not exaggerated as much. Likewise, an alpha of less than 1 will exaggerate the features of the 
+    caricature provided by the population mean.
+  </p>
+
+  <div align="middle">
+    <table style="width=100%">
+      <tr>
+        <td>
+          <img src="images/alpha01.png" align="middle" width="400px"/>
+          <figcaption align="middle">alpha = 0.1</figcaption>
+        </td>
+        <td>
+          <img src="images/alpha025.png" align="middle" width="400px"/>
+          <figcaption align="middle">alpha = 0.25</figcaption>
+        </td>
+      </tr>
+      <br>
+      <tr>
+        <td>
+          <img src="images/alpha05.png" align="middle" width="400px"/>
+          <figcaption align="middle">alpha = 0.5</figcaption>
+        </td>
+        <td>
+            <img src="images/alpha075.png" align="middle" width="400px"/>
+            <figcaption align="middle">alpha = 0.75</figcaption>
+        </td>
+      </tr>
+    </table>
+  </div>
+  <div align="middle">
+    <table style="width=100%">
+      <tr>
+        <td>
+          <img src="images/alpha-m05.png" align="middle" width="400px"/>
+          <figcaption align="middle">alpha = -0.5</figcaption>
+        </td>
+        <td>
+          <img src="images/alpha-m075.png" align="middle" width="400px"/>
+          <figcaption align="middle">alpha = -0.75</figcaption>
+        </td>
+      </tr>
+      <br>
+      <tr>
+      </tr>
+    </table>
+  </div>
+
+
+<h2 align="middle">Section VI-I: Extras - Autogenerate Correspondences</h2>
+
+<p> Previously, if we wanted to get the correpsondence points between two images, we would have to use a GUI 
+    and manually pick out the points of interest one by one. As we can see by this method, if we want to 
+    experiment and morph with many images, this would be extremely time-consuming. Fortunately, we can use the 
+    python library Dlib that has a facial landmark recognition program that can take an image and identify 68 
+    keypoints for facial features such as eyes, nose, mouth, etc. 
+    <div align="middle">
+        <table style="width=100%">
+          <tr>
+            <td>
+              <img src="images/myface.png" align="middle" width="400px"/>
+              <figcaption align="middle">My Face</figcaption>
+            </td>
+            <td>
+                <img src="images/myfacepoints.png" align="middle" width="400px"/>
+                <figcaption align="middle">Generated Facial Keypoints</figcaption>
+              </td>
+          </tr>
+          <br>
+        </table>
+      </div>
+
+
+      <h2 align="middle">Section VI-II: Extras - Morphing Sequence</h2>
+    <p>
+        Now that we can automate the process of creating keypoints for faces we want to morph, lets take advantage 
+        of this and create a much longer morph sequence of many different faces and angles! Here is a gif/video 
+        of me and some friends. 
+
+        <center>
+        <video align="middle" width="600" height="400" controls>
+            <source src="images/cs180proj3.mp4" type="video/mp4">
+          Your browser does not support the video tag.
+          </video>
+        </center>
+    </p>
+</body>
+</html>
