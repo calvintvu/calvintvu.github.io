@@ -1,0 +1,340 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+<style>
+  body {
+    padding: 100px;
+    width: 1000px;
+    margin: auto;
+    text-align: left;
+    font-weight: 300;
+    font-family: 'Open Sans', sans-serif;
+    color: #121212;
+  }
+  h1, h2, h3, h4 {
+    font-family: 'Source Sans Pro', sans-serif;
+  }
+</style>
+<title>CS 184/284A Rasterizer</title>
+<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+<link href="https://fonts.googleapis.com/css?family=Open+Sans|Source+Sans+Pro" rel="stylesheet">
+<script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+<script id="MathJax-script" async
+    src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js">
+</script>
+</head>
+
+
+<body>
+
+<h1>
+<!-- <a href="https://cal-cs184-student.github.io/hw-webpages-sp24-calvintvu/hw1/index.html">https://cal-cs184-student.github.io/hw-webpages-sp24-calvintvu/hw1/index.html</a>   -->
+</h1>
+
+<h1 align="middle">CS 180: Computer Vision & Computational Photography, Fall 2024</h1>
+<h1 align="middle">Project 4: [Auto]Stitching Photo Mosaics</h1>
+<h2 align="middle">Calvin Vu</h2>
+
+<div align="middle">
+    <table style="width=100%">
+      <tr>
+        <td>
+          <img src="output/cover2.jpg" align="middle" width="600px"/>
+        </td>
+    </table>
+  </div>
+
+<br><br>
+
+<div>
+
+<h2 align="middle">Overview</h2>
+<p>In this assignment, we will get our hands dirty in different aspects of image warping with a “cool” application 
+    -- image mosaicing. We will take photographs and create an image mosaic by registering, projective warping, 
+    resampling, and compositing them.
+</p>
+
+<h2 align="middle">Part I - Section I:  Shoot the Pictures</h2>
+
+<p>First, lets gather some photographs to use and define some correspondence points.
+</p>
+
+
+<div align="middle">
+  <table style="width=100%">
+    <tr>
+      <td>
+        <img src="output/city1.jpg" align="left" width="300px"/>
+        <figcaption align="middle">City Skyline - Image 1</figcaption>
+      </td>
+      <td>
+        <img src="output/city2.jpg" align="middle" width="300px"/>
+        <figcaption align="middle">City Skyline - Image 2</figcaption>
+      </td>
+      <td>
+        <img src="output/city3.jpg" align="right" width="300px"/>
+        <figcaption align="middle">City Skyline - Image 3</figcaption>
+      </td>
+    </tr>
+    <br><br>
+  </table>
+</div>
+<div align="middle">
+    <table style="width=100%">
+        <tr>
+            <td>
+                <img src="output/poster.jpg" align="middle" width="300px"/>
+                <figcaption align="middle">Poster</figcaption>
+              </td>
+              <td>
+                <img src="output/room.jpg" align="middle" width="600px"/>
+                <figcaption align="middle">Digital Scan</figcaption>
+              </td>
+        </tr>
+      <br><br>
+    </table>
+  </div>
+
+
+
+<h2 align="middle">Part I - Section II:  Recover Homographies</h2>
+
+<p>
+    Now that we have our images and correspondence points, we can compute the homography transformation. Here, we have
+    a set of points in image 1 that correpond to image 2. Using these points, we can define a system of equations to 
+    solve for the coefficients of our homography matrix H. Note that since H is a 3x3 matrix with 8 degrees of 
+    freedom (lower right corner is a scaling factor and can be set to 1), we need at least 4 correspondence points per 
+    image.
+</p>
+<p>
+    \[
+    \begin{pmatrix}
+    x1 & y1 & 1 & 0 & 0 & 0 & -x1*x1' & -y1*x1'\\
+    0 & 0 & 0 & x1 & y1 & 1 & -x1*y1' & -y1*y1'\\
+    x2 & y2 & 1 & 0 & 0 & 0 & -x2*x2' & -y2*x2'\\
+    0 & 0 & 0 & x2 & y2 & 1 & -x2*y2' & -y2*y2'\\
+    & & & & : \\
+    \end{pmatrix}
+    \begin{pmatrix}
+    h1 \\
+    h2 \\
+    h3 \\
+    h4 \\
+    h5 \\
+    h6 \\
+    h7 \\
+    h8 \\
+    \end{pmatrix}
+    =
+    \begin{pmatrix}
+    x1' \\
+    y1' \\
+    x2' \\
+    y2' \\
+    : \\
+    \end{pmatrix}
+    \]
+</p>
+<p>
+    Here, x1 and y1 present the first correspondence points for the first image and x1' and y1' represent 
+    the first correspdence points of the second image. Every subsequent set of correspondence points will add 
+    two lines to the matrix, so we need 4 correspondences for 8 entries in the matrix to complete the system.
+    We can use least-squares to approximate a solution if the system contains many correspondence points. Once 
+    we compute the unknown variables h1 through h8, we can construct our H matrix.
+</p>
+<p>
+    \[
+    H
+    =
+    \begin{pmatrix}
+    h1 & h2 & h3 \\
+    h4 & h5 & h6 \\
+    h7 & h8 & 1  \\
+    \end{pmatrix}
+    \]
+</p>
+<p>
+    The last entry can be 1 since we only need 8 degrees of freedom.
+</p>
+
+<h2 align="middle">Part I - Section III:  Warp the Images</h2>
+<p>
+    Once we have the homography H, we can use it to project one image onto another image. We first define the shape of 
+    our output image and with this we can use the homography to map the pixel coordinates of the output image to the 
+    input image while removing coordinates outside the bounding box of the input image or have no values (invalid pixels). Next, we 
+    interpolate over the valid pixels and set the pixel of output image to the interpolated value at any particular pixel location.
+</p>
+
+<h2 align="middle">Part I - Section IV:  Image Rectification</h2>
+<p>
+    Now that we can compute homographies and warp images, we can rectify images. To rectify an image, we first need to 
+    define 4 points on an input which is the section we want to rectify. Next, we define the size of our output image
+    and likewise define 4 points (a rectangle) which we will warp our input image to. We compute the homography
+    between these sets of 4 correspdence points then use that homography to rectify the input image.
+</p>
+<div align="middle">
+    <table style="width=100%">
+        <tr>
+            <td>
+                <img src="output/poster.jpg" align="middle" width="300px"/>
+                <figcaption align="middle">Poster</figcaption>
+              </td>
+              <td>
+                <img src="output/rect1.png" align="middle" width="300px"/>
+                <figcaption align="middle">Rectifed Poster</figcaption>
+              </td>
+        </tr>
+      <br><br>
+    </table>
+  </div>
+  <div align="middle">
+    <table style="width=100%">
+        <tr>
+            <td>
+                <img src="output/room.jpg" align="middle" width="500px"/>
+                <figcaption align="middle">Digital Scan</figcaption>
+              </td>
+              <td>
+                <img src="output/rect2.png" align="middle" width="500px"/>
+                <figcaption align="middle">Rectifed Table</figcaption>
+              </td>
+        </tr>
+      <br><br>
+    </table>
+  </div>
+  <h2 align="middle">Part I - Section V:  Image Mosaicing</h2>
+<p>
+    In this section, we can warp together multiple images to create an image mosaic. First, we select an image to be 
+    our reference image that we will warp the other images to. Next, using the correspondence points, we compute the 
+    homographies to warp each image to the reference image, so the reference image's homography matrix H is just an 
+    identity matrix. Then for each image, compute a "distance-to-zero" metric to create a mask of the image. Then using 
+    this mask, we will create gaussian pyramid for the mask and a laplacian pyramid for the images to blend all of them
+    together smoothly.
+</p>
+<div align="middle">
+    <table style="width=100%">
+      <tr>
+        <td>
+          <img src="output/city1.jpg" align="left" width="300px"/>
+          <figcaption align="middle">City Skyline - Image 1</figcaption>
+        </td>
+        <td>
+          <img src="output/city2.jpg" align="middle" width="300px"/>
+          <figcaption align="middle">City Skyline - Image 2</figcaption>
+        </td>
+        <td>
+          <img src="output/city3.jpg" align="right" width="300px"/>
+          <figcaption align="middle">City Skyline - Image 3</figcaption>
+        </td>
+      </tr>
+      <br><br>
+    </table>
+  </div>
+  <p>
+    Here are visualizations for the distance transform.
+</p>
+
+<div align="middle">
+  <table style="width=100%">
+    <tr>
+      <td>
+        <img src="output/edt1.png" align="left" width="400px"/>
+        <figcaption align="middle">Image 1</figcaption>
+      </td>
+    </tr>
+    <br><br>
+  </table>
+</div>
+
+<div align="middle">
+  <table style="width=100%">
+    <tr>
+      <td>
+        <img src="output/edt2.png" align="left" width="400px"/>
+        <figcaption align="middle">Image 2</figcaption>
+      </td>
+    </tr>
+    <br><br>
+  </table>
+</div>
+
+<div align="middle">
+  <table style="width=100%">
+    <tr>
+      <td>
+        <img src="output/edt3.png" align="left" width="400px"/>
+        <figcaption align="middle">Image 3</figcaption>
+      </td>
+    </tr>
+    <br><br>
+  </table>
+</div>
+  <div align="middle">
+    <table style="width=100%">
+      <tr>
+        <td>
+          <img src="output/mosaic1.png" align="left" width="1000px"/>
+          <figcaption align="middle">City Skyline Mosaic</figcaption>
+        </td>
+      </tr>
+      <br><br>
+    </table>
+  </div>
+  <div align="middle">
+    <table style="width=100%">
+      <tr>
+        <td>
+          <img src="output/ocean1.jpg" align="middle" width="300px"/>
+          <figcaption align="middle">Ocean - Image 1</figcaption>
+        </td>
+        <td>
+          <img src="output/ocean2.jpg" align="middle" width="300px"/>
+          <figcaption align="middle">Ocean - Image 2</figcaption>
+        </td>
+      </tr>
+      <br><br>
+    </table>
+  </div>
+  <div align="middle">
+    <table style="width=100%">
+      <tr>
+        <td>
+          <img src="output/mosaic2.png" align="middle" width="1000px"/>
+          <figcaption align="middle">Ocean - Mosaic</figcaption>
+        </td>
+      </tr>
+      <br><br>
+    </table>
+  </div>
+  <div align="middle">
+    <table style="width=100%">
+      <tr>
+        <td>
+          <img src="output/woods1.jpg" align="left" width="300px"/>
+          <figcaption align="middle">Woods - Image 1</figcaption>
+        </td>
+        <td>
+          <img src="output/woods2.jpg" align="middle" width="300px"/>
+          <figcaption align="middle">Woods - Image 2</figcaption>
+        </td>
+        <td>
+          <img src="output/woods3.jpg" align="right" width="300px"/>
+          <figcaption align="middle">Woods - Image 3</figcaption>
+        </td>
+      </tr>
+      <br><br>
+    </table>
+  </div>
+  <div align="middle">
+    <table style="width=100%">
+      <tr>
+        <td>
+          <img src="output/mosaic3.png" align="middle" width="1000px"/>
+          <figcaption align="middle">Woods - Mosaic</figcaption>
+        </td>
+      </tr>
+      <br><br>
+    </table>
+  </div>
+</body>
+</html>
