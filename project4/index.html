@@ -336,5 +336,199 @@
       <br><br>
     </table>
   </div>
+  <h2 align="middle">Part II - Section I: Harris Interest Point Detector</h2>
+
+  <p>
+    Since we are not longer manually picking correspondence points, the first step in automating the process 
+    is to generate Harris corners, or to infer the features of an image. By running the sample code, we can get
+    a collection of these points that will reprsent the corner strength at that location in the image. We may also discard points 
+    that are close the boundaries of the image.
+     These are all the points of interest 
+    we get for this image we have used previously.
+  </p>
+  <div align="middle">
+    <table style="width=100%">
+      <tr>
+        <td>
+          <img src="output/harriscorners.png" align="middle" width="1000px"/>
+          <figcaption align="middle">Harris Corners Visualized</figcaption>
+        </td>
+      </tr>
+      <br><br>
+    </table>
+  </div>
+
+  <h2 align="middle">Part II - Section II: Adaptive Non-Maximal Suppression</h2>
+
+  <p>
+    As we can see, the Harris Corner algorithm by itself both gives us keypoints that are not reliable and also 
+    too many points that we cannot realistically process and get good results. We can implement Adaptive Non-Maximal Suppression
+    to reduce the number of points to only points that are indicative of reliable "strong" corners/points in the 
+    image as well as giving us an evenly spaced collection of points. We initialize a "radius" value that starts 
+    at infinity that we will decrease until we reach the desired number of points. We will iterate through all the harris corners
+    and update this radius value according to this update rule:
+    
+    $$\begin{aligned}
+    r_i = min_j |x_i - x_j|, s.t. f(x_i) < c_{robust}f(x_j),x_j\in {Keypoints}
+    \end{aligned}$$
+    <br>
+    At the end, we will have indices of all the updated radii. We will sort all of these indices and use this to 
+    select our keypoints from the original collection. Here, we may also define a maximum number of points to select. 
+  </p>
+  <div align="middle">
+    <table style="width=100%">
+      <tr>
+        <td>
+          <img src="output/afteranms.png" align="middle" width="1000px"/>
+          <figcaption align="middle">Points left after ANMS</figcaption>
+        </td>
+      </tr>
+      <br><br>
+    </table>
+  </div>
+
+  <h2 align="middle">Part II - Section III: Extracting Feature Descriptors</h2>
+
+  <p>
+    Now that we have a workable collection of keypoints, we can define a feature description associated with 
+    each point. We first take a 40 pixel by 40 pixel patch around each keypoint if it the whole patch is within 
+    the boundaries of the image, we will then downsample the patch into an 8 pixel by 8 pixel patch. Lastly, 
+    we will normalize the gain and bias. 
+  </p>
+  <div align="middle">
+    <table style="width=100%">
+      <tr>
+        <td>
+          <img src="output/featdisc.png" align="middle" width="1000px"/>
+          <figcaption align="middle">Some feature descriptor patches</figcaption>
+        </td>
+      </tr>
+      <br><br>
+    </table>
+  </div>
+
+  <h2 align="middle">Part II - Section IV: Matching Feature Descriptors</h2>
+  <p>
+    Now that we have our keypoints and a metric we can use to determine similarity, we can start matching keypoints 
+    between images to get a collcetion of correspdence points similar to as if we were to manually select them. Given a list of 
+    feature descriptors per image, we will compute a distance matix between these descriptors. We will loop through the number of 
+    descriptors and for each i-th descriptor in one list, we will get the indices of the first and second nearest neighbors. We will
+    compute the ratio betwen these distances and if this ratio is below a defined threshold, we will consider the first nearest 
+    neighbor as a match and will correspond.
+  </p>
+  <div align="middle">
+    <table style="width=100%">
+      <tr>
+        <td>
+          <img src="output/featurematch.png" align="middle" width="1000px"/>
+          <figcaption align="middle">Matched feature descriptors</figcaption>
+        </td>
+      </tr>
+      <br><br>
+    </table>
+  </div>
+
+  <h2 align="middle">Part II - Section V: RANSAC</h2>
+  <p>
+    With this matching technique, there may be cases where points are incorrectly matched. We can use a technique called RANSAC to 
+    filter out incorrect correspondence points. First, we will randomly select a minimal subset of points required to estimate a
+    "best" homography, which is 4 in this case. We will then compute a homography from this subset. Using this computed homography,
+    we wil project the source points and compute the distances between the projected points and the destination points. We can determine 
+    the number of points from the full set that agree with this homography that is within a certain threshold, or inliers. If the 
+    number of inliers is the best we have seen, we will consider this H to be the best estimated homography. We will repeat these steps
+    for a fixed number of iterations until we get a good estimated homography.
+  </p>
+  <div align="middle">
+    <table style="width=100%">
+      <tr>
+        <td>
+          <img src="output/ransac.png" align="middle" width="1000px"/>
+          <figcaption align="middle">Matched feature descriptors after RANSAC</figcaption>
+        </td>
+      </tr>
+      <br><br>
+    </table>
+  </div>
+  <br>
+  <p>
+    We now how the full pipeline to autostitch images together from generating our correspondence points and computing the homographies
+    to warp these images. We can just use the functions we defined previously, but include RANSAC when computing homographies.
+  </p>
+  <div align="middle">
+    <table style="width=100%">
+        <tr>
+            <td>
+                <img src="output/ocean1.jpg" align="middle" width="400px"/>
+                <figcaption align="middle">Ocean - Image 1</figcaption>
+              </td>
+              <td>
+                <img src="output/ocean2.jpg" align="middle" width="400px"/>
+                <figcaption align="middle">Ocean - Image 2</figcaption>
+              </td>
+        </tr>
+      <br><br>
+    </table>
+  </div>
+  <div align="middle">
+    <table style="width=100%">
+      <tr>
+        <td>
+          <img src="output/oceanauto.png" align="middle" width="1000px"/>
+        </td>
+      </tr>
+      <br><br>
+    </table>
+  </div>
+  <div align="middle">
+    <table style="width=100%">
+        <tr>
+            <td>
+                <img src="output/class1.jpg" align="middle" width="400px"/>
+                <figcaption align="middle">Class - Image 1</figcaption>
+              </td>
+              <td>
+                <img src="output/class2.jpg" align="middle" width="400px"/>
+                <figcaption align="middle">Class - Image 2</figcaption>
+              </td>
+        </tr>
+      <br><br>
+    </table>
+  </div>
+  <div align="middle">
+    <table style="width=100%">
+      <tr>
+        <td>
+          <img src="output/classauto.png" align="middle" width="1000px"/>
+        </td>
+      </tr>
+      <br><br>
+    </table>
+  </div>
+</div>
+<div align="middle">
+  <table style="width=100%">
+      <tr>
+          <td>
+              <img src="output/daycity1.jpg" align="middle" width="400px"/>
+              <figcaption align="middle">City - Image 1</figcaption>
+            </td>
+            <td>
+              <img src="output/daycity2.jpg" align="middle" width="400px"/>
+              <figcaption align="middle">City - Image 2</figcaption>
+            </td>
+      </tr>
+    <br><br>
+  </table>
+</div>
+<div align="middle">
+  <table style="width=100%">
+    <tr>
+      <td>
+        <img src="output/cityauto.png" align="middle" width="1000px"/>
+      </td>
+    </tr>
+    <br><br>
+  </table>
+</div>
 </body>
 </html>
