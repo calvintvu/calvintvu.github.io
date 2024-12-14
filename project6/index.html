@@ -1,0 +1,1164 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+<style>
+  body {
+    padding: 100px;
+    width: 1000px;
+    margin: auto;
+    text-align: left;
+    font-weight: 300;
+    font-family: 'Open Sans', sans-serif;
+    color: #121212;
+  }
+  h1, h2, h3, h4 {
+    font-family: 'Source Sans Pro', sans-serif;
+  }
+</style>
+<title>CS 184/284A Rasterizer</title>
+<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+<link href="https://fonts.googleapis.com/css?family=Open+Sans|Source+Sans+Pro" rel="stylesheet">
+<script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+<script id="MathJax-script" async
+    src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js">
+</script>
+</head>
+
+
+<body>
+
+<h1>
+<!-- <a href="https://cal-cs184-student.github.io/hw-webpages-sp24-calvintvu/hw1/index.html">https://cal-cs184-student.github.io/hw-webpages-sp24-calvintvu/hw1/index.html</a>   -->
+</h1>
+
+<h1 align="middle">CS 180: Computer Vision & Computational Photography, Fall 2024</h1>
+<h1 align="middle">Project 6: Neural Radiance Fields</h1>
+<h2 align="middle">Calvin Vu</h2>
+
+<div align="middle">
+    <table style="width=100%">
+      <tr>
+        <td>
+          <img src="output/nerfcover.png" align="middle" width="1000px"/>
+        </td>
+    </table>
+  </div>
+
+<div>
+
+<h2 align="middle">Overview</h2>
+<p>In this assignment, we will explore Neural Radiance Fields, where we can train a network to render 3D scenes given a dataset of 2D images!
+</p>
+
+<h1 align="middle">Part 1: Fit a Neural Field to a 2D Image!</h1>
+
+<h2 align="middle">Part 1.1: Network</h2>
+
+<p>First, since there is no concept of radiance in 2D, the Neural Radiance Field falls back to just a Neural Field:
+    <math xmlns="http://www.w3.org/1998/Math/MathML">
+        <mi>F</mi>
+        <mo>:</mo>
+        <mo fence="false" stretchy="false">{</mo>
+        <mi>u</mi>
+        <mo>,</mo>
+        <mi>v</mi>
+        <mo fence="false" stretchy="false">}</mo>
+        <mo stretchy="false">&#x2192;</mo>
+        <mo fence="false" stretchy="false">{</mo>
+        <mi>r</mi>
+        <mo>,</mo>
+        <mi>g</mi>
+        <mo>,</mo>
+        <mi>b</mi>
+        <mo fence="false" stretchy="false">}</mo>
+      </math> in 2D, in which <b>{u, v}</b> is the pixel coordinate. In this section, we will create a neural field that can represent a 2D 
+      image and optimize that neural field to fit this image.
+    <br></br>
+      Our initial network will follow the diagram below:
+</p>
+
+
+<div align="middle">
+  <table style="width=100%">
+    <tr>
+      <td>
+        <img src="output/mlp_img.jpg" align="left" width="600px"/>
+        <figcaption align="middle"><b>Neural Field MLP</b></figcaption>
+      </td>
+    </tr>
+    <br><br>
+  </table>
+</div>
+
+<p>
+    This means that our Pytorch implementation will follow this:
+    \[
+        Linear (256) \rightarrow ReLU \rightarrow Linear (256) \rightarrow ReLU \rightarrow Linear (256) \rightarrow ReLU \rightarrow Linear (3) \rightarrow Sigmoid
+    \]
+    <br>
+    However, we wil have to apply positional encoding to the input of our model according to the following equation:
+    <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+        <mi>P</mi>
+        <mi>E</mi>
+        <mo stretchy="false">(</mo>
+        <mi>x</mi>
+        <mo stretchy="false">)</mo>
+        <mo>=</mo>
+        <mo fence="false" stretchy="false">{</mo>
+        <mi>x</mi>
+        <mo>,</mo>
+        <mi>s</mi>
+        <mi>i</mi>
+        <mi>n</mi>
+        <mo stretchy="false">(</mo>
+        <msup>
+          <mn>2</mn>
+          <mn>0</mn>
+        </msup>
+        <mi>&#x3C0;</mi>
+        <mi>x</mi>
+        <mo stretchy="false">)</mo>
+        <mo>,</mo>
+        <mi>c</mi>
+        <mi>o</mi>
+        <mi>s</mi>
+        <mo stretchy="false">(</mo>
+        <msup>
+          <mn>2</mn>
+          <mn>0</mn>
+        </msup>
+        <mi>&#x3C0;</mi>
+        <mi>x</mi>
+        <mo stretchy="false">)</mo>
+        <mo>,</mo>
+        <mi>s</mi>
+        <mi>i</mi>
+        <mi>n</mi>
+        <mo stretchy="false">(</mo>
+        <msup>
+          <mn>2</mn>
+          <mn>1</mn>
+        </msup>
+        <mi>&#x3C0;</mi>
+        <mi>x</mi>
+        <mo stretchy="false">)</mo>
+        <mo>,</mo>
+        <mi>c</mi>
+        <mi>o</mi>
+        <mi>s</mi>
+        <mo stretchy="false">(</mo>
+        <msup>
+          <mn>2</mn>
+          <mn>1</mn>
+        </msup>
+        <mi>&#x3C0;</mi>
+        <mi>x</mi>
+        <mo stretchy="false">)</mo>
+        <mo>,</mo>
+        <mo>.</mo>
+        <mo>.</mo>
+        <mo>.</mo>
+        <mo>,</mo>
+        <mi>s</mi>
+        <mi>i</mi>
+        <mi>n</mi>
+        <mo stretchy="false">(</mo>
+        <msup>
+          <mn>2</mn>
+          <mrow data-mjx-texclass="ORD">
+            <mi>L</mi>
+            <mo>&#x2212;</mo>
+            <mn>1</mn>
+          </mrow>
+        </msup>
+        <mi>&#x3C0;</mi>
+        <mi>x</mi>
+        <mo stretchy="false">)</mo>
+        <mo>,</mo>
+        <mi>c</mi>
+        <mi>o</mi>
+        <mi>s</mi>
+        <mo stretchy="false">(</mo>
+        <msup>
+          <mn>2</mn>
+          <mrow data-mjx-texclass="ORD">
+            <mi>L</mi>
+            <mo>&#x2212;</mo>
+            <mn>1</mn>
+          </mrow>
+        </msup>
+        <mi>&#x3C0;</mi>
+        <mi>x</mi>
+        <mo stretchy="false">)</mo>
+        <mo fence="false" stretchy="false">}</mo>
+      </math>
+      So for the pixel coordinates <b>x</b> in our input, given a range <b>L</b>, we will loop through <b>L</b> and calculate each frequency term
+      and concatenate each term using Pytorch. We will then use this encoded input in our forward process of the network.
+</p>
+
+<h2 align="middle">Part 1.2: Dataloader</h2>
+
+<p>
+    In case of large images, we will take batches of the image instead processing the entire thing, so we will make a custom dataloader. We 
+    will read the image and normalize the colors by dividing by 255. Then, given <b>N</b> pixels, we will sample random pixel indices then 
+    normalize these indices by the dividing by the width and height of the image, which will give us our <b>N x 2</b> 2D coordinates. To get
+    the color values, we will use our sample indices and access the image at those locations to get the pixel values.
+</p>
+
+<h2 align="middle">Part 1.3: Loss Function, Optimizer, and Metric</h2>
+
+<p>
+    You will use mean squared error loss (MSE) between the predicted color and the groundtruth color. We will use an Adam optimizer with a learning rate 
+    of 1e-2. Using the MSE, we will calculate the Peak signal-to-noise ration (PSNR) to measure quality of the image, so higher is better.
+</p>
+
+<h2 align="middle">Part 1.4: Hyperparameter Tuning</h2>
+
+<p>
+    The first variation is learning rate, where I changed the rate to 1e-10. I found that this negatively impacted performance, where I just 
+    got gray images for all of the training steps. The next variation is layer count, where I added more Linear and ReLU layers. This did not
+    seem to have much change to the overall performance of the network.
+</p>
+<p>For the results below we used the hyperparameters: </p>
+<li>Learning Rate = 1e-2</li>
+<li>L = 10</li>
+<li>4 Linear Layers, 3 ReLU layers, 1 Sigmoid Layer</li>
+<div align="middle">
+    <table style="width=100%">
+      <tr>
+        <td>
+            <img src="output/fox1_s1.png" align="middle" width="400px"/>
+            <!-- <figcaption align="middle">5 Epochs</figcaption> -->
+          </td>
+          <td>
+            <img src="output/fox1_s10.png" align="middle" width="400px"/>
+            <!-- <figcaption align="middle">5 Epochs</figcaption> -->
+          </td>
+      <br>
+    </table>
+  </div>
+  <div align="middle">
+    <table style="width=100%">
+      <tr>
+        <td>
+            <img src="output/fox1_s50.png" align="middle" width="400px"/>
+            <!-- <figcaption align="middle">20 Epochs</figcaption> -->
+          </td>
+          <td>
+            <img src="output/fox1_s100.png" align="middle" width="400px"/>
+            <!-- <figcaption align="middle">20 Epochs</figcaption> -->
+          </td>
+      <br>
+    </table>
+  </div>
+  <div align="middle">
+    <table style="width=100%">
+      <tr>
+        <td>
+            <img src="output/fox1_s1000.png" align="middle" width="400px"/>
+            <!-- <figcaption align="middle">20 Epochs</figcaption> -->
+          </td>
+          <td>
+            <img src="output/fox1_s2000.png" align="middle" width="400px"/>
+            <!-- <figcaption align="middle">20 Epochs</figcaption> -->
+          </td>
+      <br>
+    </table>
+  </div>
+  <div align="middle">
+    <table style="width=100%">
+      <tr>
+        <td>
+            <img src="output/fox1_psnr_graph.png" align="middle" width="400px"/>
+            <!-- <figcaption align="middle">20 Epochs</figcaption> -->
+          </td>
+      <br>
+    </table>
+  </div>
+
+  <p>For the results below we used the hyperparameters: </p>
+  <li>Learning Rate = 1e-2</li>
+  <li>L = 10</li>
+  <li>8 Linear Layers, 7 ReLU layers, 1 Sigmoid Layer</li>
+  <div align="middle">
+    <table style="width=100%">
+      <tr>
+        <td>
+            <img src="output/fox2_s1.png" align="middle" width="400px"/>
+            <!-- <figcaption align="middle">5 Epochs</figcaption> -->
+          </td>
+          <td>
+            <img src="output/fox2_s10.png" align="middle" width="400px"/>
+            <!-- <figcaption align="middle">5 Epochs</figcaption> -->
+          </td>
+      <br>
+    </table>
+  </div>
+  <div align="middle">
+    <table style="width=100%">
+      <tr>
+        <td>
+            <img src="output/fox2_s50.png" align="middle" width="400px"/>
+            <!-- <figcaption align="middle">20 Epochs</figcaption> -->
+          </td>
+          <td>
+            <img src="output/fox2_s100.png" align="middle" width="400px"/>
+            <!-- <figcaption align="middle">20 Epochs</figcaption> -->
+          </td>
+      <br>
+    </table>
+  </div>
+  <div align="middle">
+    <table style="width=100%">
+      <tr>
+        <td>
+            <img src="output/fox2_s2000.png" align="middle" width="400px"/>
+            <!-- <figcaption align="middle">20 Epochs</figcaption> -->
+          </td>
+          <td>
+            <img src="output/fox2_psnr_graph.png" align="middle" width="400px"/>
+            <!-- <figcaption align="middle">20 Epochs</figcaption> -->
+          </td>
+      <br>
+    </table>
+  </div>
+
+  <p>For the results below we used the hyperparameters: </p>
+  <li>Learning Rate = 1e-10</li>
+  <li>L = 10</li>
+  <li>4 Linear Layers, 3 ReLU layers, 1 Sigmoid Layer</li>
+  <div align="middle">
+    <table style="width=100%">
+      <tr>
+        <td>
+            <img src="output/fox3_s10.png" align="middle" width="400px"/>
+            <!-- <figcaption align="middle">5 Epochs</figcaption> -->
+          </td>
+          <td>
+            <img src="output/fox3_s100.png" align="middle" width="400px"/>
+            <!-- <figcaption align="middle">5 Epochs</figcaption> -->
+          </td>
+      <br>
+    </table>
+  </div>
+  <div align="middle">
+    <table style="width=100%">
+      <tr>
+        <td>
+            <img src="output/fox3_s2000.png" align="middle" width="400px"/>
+            <!-- <figcaption align="middle">20 Epochs</figcaption> -->
+          </td>
+          <td>
+            <img src="output/fox3_psnr_graph.png" align="middle" width="400px"/>
+            <!-- <figcaption align="middle">20 Epochs</figcaption> -->
+          </td>
+      <br>
+    </table>
+  </div>
+
+  <p>For the results below we used the hyperparameters: </p>
+<li>Learning Rate = 1e-2</li>
+<li>L = 10</li>
+<li>4 Linear Layers, 3 ReLU layers, 1 Sigmoid Layer</li>
+<div align="middle">
+    <table style="width=100%">
+      <tr>
+        <td>
+            <img src="output/air1.png" align="middle" width="400px"/>
+            <!-- <figcaption align="middle">5 Epochs</figcaption> -->
+          </td>
+          <td>
+            <img src="output/air10.png" align="middle" width="400px"/>
+            <!-- <figcaption align="middle">5 Epochs</figcaption> -->
+          </td>
+      <br>
+    </table>
+  </div>
+  <div align="middle">
+    <table style="width=100%">
+      <tr>
+        <td>
+            <img src="output/air50.png" align="middle" width="400px"/>
+            <!-- <figcaption align="middle">20 Epochs</figcaption> -->
+          </td>
+          <td>
+            <img src="output/air250.png" align="middle" width="400px"/>
+            <!-- <figcaption align="middle">20 Epochs</figcaption> -->
+          </td>
+      <br>
+    </table>
+  </div>
+  <div align="middle">
+    <table style="width=100%">
+      <tr>
+        <td>
+            <img src="output/air2000.png" align="middle" width="400px"/>
+            <!-- <figcaption align="middle">20 Epochs</figcaption> -->
+          </td>
+          <td>
+            <img src="output/airpsnrgraph.png" align="middle" width="400px"/>
+            <!-- <figcaption align="middle">20 Epochs</figcaption> -->
+          </td>
+      <br>
+    </table>
+  </div>
+
+<h1 align="middle">Part 2: Fit a Neural Radiance Field from Multi-view Images</h1>
+
+<h2 align="middle">Part 2.1: Create Rays from Cameras</h2>
+<h3 align="middle">Part 2.1.1: Camera to World Coordinate Conversion</h3>
+<p>
+    We have:
+    <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+        <mtable displaystyle="true" columnalign="right" columnspacing="" rowspacing="3pt">
+          <mtr>
+            <mtd>
+              <mrow data-mjx-texclass="INNER">
+                <mo data-mjx-texclass="OPEN">[</mo>
+                <mtable columnalign="center" columnspacing="1em" rowspacing="4pt">
+                  <mtr>
+                    <mtd>
+                      <msub>
+                        <mi>x</mi>
+                        <mi>c</mi>
+                      </msub>
+                    </mtd>
+                  </mtr>
+                  <mtr>
+                    <mtd>
+                      <msub>
+                        <mi>y</mi>
+                        <mi>c</mi>
+                      </msub>
+                    </mtd>
+                  </mtr>
+                  <mtr>
+                    <mtd>
+                      <msub>
+                        <mi>z</mi>
+                        <mi>c</mi>
+                      </msub>
+                    </mtd>
+                  </mtr>
+                  <mtr>
+                    <mtd>
+                      <mn>1</mn>
+                    </mtd>
+                  </mtr>
+                </mtable>
+                <mo data-mjx-texclass="CLOSE">]</mo>
+              </mrow>
+              <mo>=</mo>
+              <mrow data-mjx-texclass="INNER">
+                <mo data-mjx-texclass="OPEN">[</mo>
+                <mtable columnalign="center" columnspacing="1em" rowspacing="4pt">
+                  <mtr>
+                    <mtd>
+                      <msub>
+                        <mrow data-mjx-texclass="ORD">
+                          <mi mathvariant="bold">R</mi>
+                        </mrow>
+                        <mrow data-mjx-texclass="ORD">
+                          <mn>3</mn>
+                          <mo>&#xD7;</mo>
+                          <mn>3</mn>
+                        </mrow>
+                      </msub>
+                    </mtd>
+                    <mtd>
+                      <mrow data-mjx-texclass="ORD">
+                        <mi mathvariant="bold">t</mi>
+                      </mrow>
+                    </mtd>
+                  </mtr>
+                  <mtr>
+                    <mtd>
+                      <msub>
+                        <mrow data-mjx-texclass="ORD">
+                          <mn mathvariant="bold">0</mn>
+                        </mrow>
+                        <mrow data-mjx-texclass="ORD">
+                          <mn>1</mn>
+                          <mo>&#xD7;</mo>
+                          <mn>3</mn>
+                        </mrow>
+                      </msub>
+                    </mtd>
+                    <mtd>
+                      <mn>1</mn>
+                    </mtd>
+                  </mtr>
+                </mtable>
+                <mo data-mjx-texclass="CLOSE">]</mo>
+              </mrow>
+              <mrow data-mjx-texclass="INNER">
+                <mo data-mjx-texclass="OPEN">[</mo>
+                <mtable columnalign="center" columnspacing="1em" rowspacing="4pt">
+                  <mtr>
+                    <mtd>
+                      <msub>
+                        <mi>x</mi>
+                        <mi>w</mi>
+                      </msub>
+                    </mtd>
+                  </mtr>
+                  <mtr>
+                    <mtd>
+                      <msub>
+                        <mi>y</mi>
+                        <mi>w</mi>
+                      </msub>
+                    </mtd>
+                  </mtr>
+                  <mtr>
+                    <mtd>
+                      <msub>
+                        <mi>z</mi>
+                        <mi>w</mi>
+                      </msub>
+                    </mtd>
+                  </mtr>
+                  <mtr>
+                    <mtd>
+                      <mn>1</mn>
+                    </mtd>
+                  </mtr>
+                </mtable>
+                <mo data-mjx-texclass="CLOSE">]</mo>
+              </mrow>
+            </mtd>
+          </mtr>
+        </mtable>
+      </math>
+      where,
+      <math xmlns="http://www.w3.org/1998/Math/MathML">
+        <mrow data-mjx-texclass="ORD">
+          <msub>
+            <mi mathvariant="bold">X</mi>
+            <mi mathvariant="bold">w</mi>
+          </msub>
+        </mrow>
+        <mo>=</mo>
+        <mo stretchy="false">(</mo>
+        <msub>
+          <mi>x</mi>
+          <mi>w</mi>
+        </msub>
+        <mo>,</mo>
+        <msub>
+          <mi>y</mi>
+          <mi>w</mi>
+        </msub>
+        <mo>,</mo>
+        <msub>
+          <mi>z</mi>
+          <mi>w</mi>
+        </msub>
+        <mo stretchy="false">)</mo>
+      </math>
+      is the world space and
+      <math xmlns="http://www.w3.org/1998/Math/MathML">
+        <mrow data-mjx-texclass="ORD">
+          <msub>
+            <mi mathvariant="bold">X</mi>
+            <mi mathvariant="bold">c</mi>
+          </msub>
+        </mrow>
+        <mo>=</mo>
+        <mo stretchy="false">(</mo>
+        <msub>
+          <mi>x</mi>
+          <mi>c</mi>
+        </msub>
+        <mo>,</mo>
+        <msub>
+          <mi>y</mi>
+          <mi>c</mi>
+        </msub>
+        <mo>,</mo>
+        <msub>
+          <mi>z</mi>
+          <mi>c</mi>
+        </msub>
+        <mo stretchy="false">)</mo>
+      </math>
+      is the camera space.
+      <math xmlns="http://www.w3.org/1998/Math/MathML">
+        <mrow data-mjx-texclass="INNER">
+          <mo data-mjx-texclass="OPEN">[</mo>
+          <mtable columnspacing="1em" rowspacing="4pt">
+            <mtr>
+              <mtd>
+                <msub>
+                  <mrow data-mjx-texclass="ORD">
+                    <mi mathvariant="bold">R</mi>
+                  </mrow>
+                  <mrow data-mjx-texclass="ORD">
+                    <mn>3</mn>
+                    <mo>&#xD7;</mo>
+                    <mn>3</mn>
+                  </mrow>
+                </msub>
+              </mtd>
+              <mtd>
+                <mrow data-mjx-texclass="ORD">
+                  <mi mathvariant="bold">t</mi>
+                </mrow>
+              </mtd>
+            </mtr>
+            <mtr>
+              <mtd>
+                <msub>
+                  <mrow data-mjx-texclass="ORD">
+                    <mn mathvariant="bold">0</mn>
+                  </mrow>
+                  <mrow data-mjx-texclass="ORD">
+                    <mn>1</mn>
+                    <mo>&#xD7;</mo>
+                    <mn>3</mn>
+                  </mrow>
+                </msub>
+              </mtd>
+              <mtd>
+                <mn>1</mn>
+              </mtd>
+            </mtr>
+          </mtable>
+          <mo data-mjx-texclass="CLOSE">]</mo>
+        </mrow>
+      </math>
+      is the world-to-camera (w2c) transformation matrix and its inverse is called the camera-to-world (c2w) transformation matrix.
+      Given <b>x<sub>c</sub></b> and <b>c2w</b>, we can do <br>matrix-vector multuplication to get <b>x<sub>w</sub> = x<sub>c</sub> * c2w</b>.
+</p>
+<h3 align="middle">Part 2.1.2: Pixel to Camera Coordinate Conversion</h3>
+<p>
+    We have matrix <b>K</b>:
+    <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+        <mtable displaystyle="true" columnalign="right" columnspacing="" rowspacing="3pt">
+          <mtr>
+            <mtd>
+              <mrow data-mjx-texclass="ORD">
+                <mi mathvariant="bold">K</mi>
+              </mrow>
+              <mo>=</mo>
+              <mrow data-mjx-texclass="INNER">
+                <mo data-mjx-texclass="OPEN">[</mo>
+                <mtable columnalign="center" columnspacing="1em" rowspacing="4pt">
+                  <mtr>
+                    <mtd>
+                      <msub>
+                        <mi>f</mi>
+                        <mi>x</mi>
+                      </msub>
+                    </mtd>
+                    <mtd>
+                      <mn>0</mn>
+                    </mtd>
+                    <mtd>
+                      <msub>
+                        <mi>o</mi>
+                        <mi>x</mi>
+                      </msub>
+                    </mtd>
+                  </mtr>
+                  <mtr>
+                    <mtd>
+                      <mn>0</mn>
+                    </mtd>
+                    <mtd>
+                      <msub>
+                        <mi>f</mi>
+                        <mi>y</mi>
+                      </msub>
+                    </mtd>
+                    <mtd>
+                      <msub>
+                        <mi>o</mi>
+                        <mi>y</mi>
+                      </msub>
+                    </mtd>
+                  </mtr>
+                  <mtr>
+                    <mtd>
+                      <mn>0</mn>
+                    </mtd>
+                    <mtd>
+                      <mn>0</mn>
+                    </mtd>
+                    <mtd>
+                      <mn>1</mn>
+                    </mtd>
+                  </mtr>
+                </mtable>
+                <mo data-mjx-texclass="CLOSE">]</mo>
+              </mrow>
+            </mtd>
+          </mtr>
+        </mtable>
+      </math>
+      where <b>(f<sub>x</sub>, f<sub>y</sub>)</b> is the focal length and <math xmlns="http://www.w3.org/1998/Math/MathML">
+        <mo stretchy="false">(</mo>
+        <msub>
+          <mi>o</mi>
+          <mi>x</mi>
+        </msub>
+        <mo>=</mo>
+        <mtext>image_width</mtext>
+        <mrow data-mjx-texclass="ORD">
+          <mo>/</mo>
+        </mrow>
+        <mn>2</mn>
+        <mo>,</mo>
+        <msub>
+          <mi>o</mi>
+          <mi>y</mi>
+        </msub>
+        <mo>=</mo>
+        <mtext>image_height</mtext>
+        <mrow data-mjx-texclass="ORD">
+          <mo>/</mo>
+        </mrow>
+        <mn>2</mn>
+        <mo stretchy="false">)</mo>
+      </math> 
+      is the principal point.
+      <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+        <mtable displaystyle="true" columnalign="right" columnspacing="" rowspacing="3pt">
+          <mtr>
+            <mtd>
+              <mi>s</mi>
+              <mrow data-mjx-texclass="INNER">
+                <mo data-mjx-texclass="OPEN">[</mo>
+                <mtable columnalign="center" columnspacing="1em" rowspacing="4pt">
+                  <mtr>
+                    <mtd>
+                      <mi>u</mi>
+                    </mtd>
+                  </mtr>
+                  <mtr>
+                    <mtd>
+                      <mi>v</mi>
+                    </mtd>
+                  </mtr>
+                  <mtr>
+                    <mtd>
+                      <mn>1</mn>
+                    </mtd>
+                  </mtr>
+                </mtable>
+                <mo data-mjx-texclass="CLOSE">]</mo>
+              </mrow>
+              <mo>=</mo>
+              <mrow data-mjx-texclass="ORD">
+                <mi mathvariant="bold">K</mi>
+              </mrow>
+              <mrow data-mjx-texclass="INNER">
+                <mo data-mjx-texclass="OPEN">[</mo>
+                <mtable columnalign="center" columnspacing="1em" rowspacing="4pt">
+                  <mtr>
+                    <mtd>
+                      <msub>
+                        <mi>x</mi>
+                        <mi>c</mi>
+                      </msub>
+                    </mtd>
+                  </mtr>
+                  <mtr>
+                    <mtd>
+                      <msub>
+                        <mi>y</mi>
+                        <mi>c</mi>
+                      </msub>
+                    </mtd>
+                  </mtr>
+                  <mtr>
+                    <mtd>
+                      <msub>
+                        <mi>z</mi>
+                        <mi>c</mi>
+                      </msub>
+                    </mtd>
+                  </mtr>
+                </mtable>
+                <mo data-mjx-texclass="CLOSE">]</mo>
+              </mrow>
+            </mtd>
+          </mtr>
+        </mtable>
+      </math>
+      Given matrix <b>K</b>, <b>s</b>, and 2D location <b>(u, v)</b>, we can do matrix-vector multiplication again to get
+       <b>x<sub>c</sub> = s * [u, v, 1]<sup>T</sup> * K<sup>-1</sup></b>.
+</p>
+<h3 align="middle">Part 2.1.3: Pixel to Ray</h3>
+<p>
+    We need to solve:
+    <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+        <mtable displaystyle="true" columnalign="right" columnspacing="" rowspacing="3pt">
+          <mtr>
+            <mtd>
+              <msub>
+                <mrow data-mjx-texclass="ORD">
+                  <mi mathvariant="bold">r</mi>
+                </mrow>
+                <mi>o</mi>
+              </msub>
+              <mo>=</mo>
+              <mo>&#x2212;</mo>
+              <msubsup>
+                <mrow data-mjx-texclass="ORD">
+                  <mi mathvariant="bold">R</mi>
+                </mrow>
+                <mrow data-mjx-texclass="ORD">
+                  <mn>3</mn>
+                  <mo>&#xD7;</mo>
+                  <mn>3</mn>
+                </mrow>
+                <mrow data-mjx-texclass="ORD">
+                  <mo>&#x2212;</mo>
+                  <mn>1</mn>
+                </mrow>
+              </msubsup>
+              <mrow data-mjx-texclass="ORD">
+                <mi mathvariant="bold">t</mi>
+              </mrow>
+            </mtd>
+          </mtr>
+        </mtable>
+      </math>
+      and 
+      <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+        <mtable displaystyle="true" columnalign="right" columnspacing="" rowspacing="3pt">
+          <mtr>
+            <mtd>
+              <msub>
+                <mrow data-mjx-texclass="ORD">
+                  <mi mathvariant="bold">r</mi>
+                </mrow>
+                <mi>d</mi>
+              </msub>
+              <mo>=</mo>
+              <mfrac>
+                <mrow>
+                  <mrow data-mjx-texclass="ORD">
+                    <msub>
+                      <mi mathvariant="bold">X</mi>
+                      <mi mathvariant="bold">w</mi>
+                    </msub>
+                  </mrow>
+                  <mo>&#x2212;</mo>
+                  <msub>
+                    <mrow data-mjx-texclass="ORD">
+                      <mi mathvariant="bold">r</mi>
+                    </mrow>
+                    <mi>o</mi>
+                  </msub>
+                </mrow>
+                <mrow>
+                  <mo stretchy="false">|</mo>
+                  <mrow data-mjx-texclass="ORD">
+                    <mo stretchy="false">|</mo>
+                  </mrow>
+                  <mrow data-mjx-texclass="ORD">
+                    <msub>
+                      <mi mathvariant="bold">X</mi>
+                      <mi mathvariant="bold">w</mi>
+                    </msub>
+                  </mrow>
+                  <mo>&#x2212;</mo>
+                  <msub>
+                    <mrow data-mjx-texclass="ORD">
+                      <mi mathvariant="bold">r</mi>
+                    </mrow>
+                    <mi>o</mi>
+                  </msub>
+                  <mrow data-mjx-texclass="ORD">
+                    <mo stretchy="false">|</mo>
+                  </mrow>
+                  <msub>
+                    <mo stretchy="false">|</mo>
+                    <mn>2</mn>
+                  </msub>
+                </mrow>
+              </mfrac>
+            </mtd>
+          </mtr>
+        </mtable>
+      </math>
+      where <b>r<sub>d</sub></b> is a directional ray and <b>r<sub>o</sub></b> is an origin ray. To find <b>r<sub>o</sub></b>, we can 
+      use camera-to-world to transform the origin (zero matrix/tensor). To find <b>r<sub>d</sub></b>, we can find the origin ray like 
+      previously described and find <b>x<sub>w</sub></b> with <b>x<sub>w</sub> = x<sub>c</sub> * c2w</b> and divide the difference by the 
+      difference magnitude.
+    </p>
+    <h2 align="middle">Part 2.2: Sampling</h2>
+    <h3 align="middle">Part 2.2.1: Sampling Rays from Images</h3>
+    <p>
+        In Part 1, we have done random sampling on a single image to get the pixel color and pixel coordinates. Here we can build on top 
+        of that, and with the camera intrinsics and extrinsics. After reading the image, we create a UV pixel grid using the width 
+        and height of the image while adding <b>0.5</b> to account for the image offset. We then pick <b>N</b> rays to globally sample. For 
+        each <b>N<sub>i</sub></b>, we can take matrix <b>K<sub>i</sub></b>, <b>UV pixel grid</b>, <b>c2w matrix</b>, to compute the origin
+        and directional rays using the defintions described above.
+    </p>
+    <h3 align="middle">Part 2.2.2: Sampling Points along Rays</h3>
+    <p>
+        Now that we have the rays, we can discritize each ray into 3D space. We first uniformly create some samples along the ray 
+        <b>(t = np.linspace(near, far, n_samples))</b>. We will use <b>near=2.0</b> and <b>far=6.0</b>. To get the 3D coordinates, we can 
+        find <math xmlns="http://www.w3.org/1998/Math/MathML">
+            <mrow data-mjx-texclass="ORD">
+              <mi mathvariant="bold">x</mi>
+            </mrow>
+            <mo>=</mo>
+            <msub>
+              <mrow data-mjx-texclass="ORD">
+                <mi mathvariant="bold">R</mi>
+              </mrow>
+              <mi>o</mi>
+            </msub>
+            <mo>+</mo>
+            <msub>
+              <mrow data-mjx-texclass="ORD">
+                <mi mathvariant="bold">R</mi>
+              </mrow>
+              <mi>d</mi>
+            </msub>
+            <mo>&#x2217;</mo>
+            <mi>t</mi>
+          </math>
+          however to prevent potential overfitting, we will add perturbation with <b>t = t + (np.random.rand(t.shape) * t_width)</b> to the 
+          points during training.
+    </p>
+    <h2 align="middle">Part 2.3: Putting the Dataloading All Together</h2>
+    <p>
+        Using all the definitions described above, we can create a custom dataloader for rays similar to Part 1. We can sample random origin
+        and directional rays for the image and sample the points along these rays. Here is a visualization.
+    </p>
+    <div align="middle">
+        <table style="width=100%">
+          <tr>
+            <td>
+              <img src="output/viz.png" align="left" width="1000px"/>
+              <figcaption align="middle"><b>100 rays</b></figcaption>
+            </td>
+          </tr>
+          <br><br>
+        </table>
+      </div>
+
+    <h2 align="middle">Part 2.4: Neural Radiance Field</h2>
+    <h3 align="middle">Part 2.4.1: Network</h3>
+    <p>
+        Our NeRF architecture will be a modification of our Neural Field model, most notably:
+        <li>1 - input is now 3D world coordinates instead of 2D pixel coordinates </li>
+        <li>2 - the MLP is deeper</li>
+        <li>3 - we inject the input (after PE) to the middle of your MLP through concatenation</li>
+        <br>
+        Our architecture will look similar to this:
+
+    </p>
+    <div align="middle">
+        <table style="width=100%">
+          <tr>
+            <td>
+              <img src="output/mlp_nerf.png" align="left" width="1000px"/>
+              <figcaption align="middle"><b>Neural Radiance Field MLP</b></figcaption>
+            </td>
+          </tr>
+          <br><br>
+        </table>
+      </div>
+      <p>
+        Our positional encoding for the input will be similar to Part 1. The first half of the MLP will just be a series 
+        of Linear and ReLU layers. In the second half, we will also have a series of Linear and ReLU layers but we will concatenate
+        the encoded coordinates. Then the model branches to predict a color value and a density value. For the density layer, we will have a
+        Linear layer with an output dimension of <b>1</b> going into a ReLU layer. For the color layer, we will have a series of Linear and ReLU 
+        layers going into a sigmoid layer. So in the forward process, we get the output of the first half of the MLP, concatenate the 
+        encoded coordinates, pass that into the second half of the MLP, use that output to get the density prediction, then concatenate the 
+        encoded directional rays and pass that into the color layer to get the RBG prediction.
+      </p>
+      <h2 align="middle">Part 2.5: Volume Rendering</h2>
+      <p>
+        We have the equation:
+        <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+            <mtable displaystyle="true" columnalign="right" columnspacing="" rowspacing="3pt">
+              <mtr>
+                <mtd>
+                  <mrow data-mjx-texclass="ORD">
+                    <mover>
+                      <mi>C</mi>
+                      <mo stretchy="false">^</mo>
+                    </mover>
+                  </mrow>
+                  <mo stretchy="false">(</mo>
+                  <mrow data-mjx-texclass="ORD">
+                    <mi mathvariant="bold">r</mi>
+                  </mrow>
+                  <mo stretchy="false">)</mo>
+                  <mo>=</mo>
+                  <munderover>
+                    <mo data-mjx-texclass="OP">&#x2211;</mo>
+                    <mrow data-mjx-texclass="ORD">
+                      <mi>i</mi>
+                      <mo>=</mo>
+                      <mn>1</mn>
+                    </mrow>
+                    <mi>N</mi>
+                  </munderover>
+                  <msub>
+                    <mi>T</mi>
+                    <mi>i</mi>
+                  </msub>
+                  <mrow data-mjx-texclass="INNER">
+                    <mo data-mjx-texclass="OPEN">(</mo>
+                    <mn>1</mn>
+                    <mo>&#x2212;</mo>
+                    <mi>exp</mi>
+                    <mo data-mjx-texclass="NONE">&#x2061;</mo>
+                    <mrow data-mjx-texclass="INNER">
+                      <mo data-mjx-texclass="OPEN">(</mo>
+                      <mo>&#x2212;</mo>
+                      <msub>
+                        <mi>&#x3C3;</mi>
+                        <mi>i</mi>
+                      </msub>
+                      <msub>
+                        <mi>&#x3B4;</mi>
+                        <mi>i</mi>
+                      </msub>
+                      <mo data-mjx-texclass="CLOSE">)</mo>
+                    </mrow>
+                    <mo data-mjx-texclass="CLOSE">)</mo>
+                  </mrow>
+                  <msub>
+                    <mrow data-mjx-texclass="ORD">
+                      <mi mathvariant="bold">c</mi>
+                    </mrow>
+                    <mi>i</mi>
+                  </msub>
+                  <mo>,</mo>
+                  <mtext>&#xA0;where&#xA0;</mtext>
+                  <msub>
+                    <mi>T</mi>
+                    <mi>i</mi>
+                  </msub>
+                  <mo>=</mo>
+                  <mi>exp</mi>
+                  <mo data-mjx-texclass="NONE">&#x2061;</mo>
+                  <mrow data-mjx-texclass="INNER">
+                    <mo data-mjx-texclass="OPEN">(</mo>
+                    <mo>&#x2212;</mo>
+                    <munderover>
+                      <mo data-mjx-texclass="OP">&#x2211;</mo>
+                      <mrow data-mjx-texclass="ORD">
+                        <mi>j</mi>
+                        <mo>=</mo>
+                        <mn>1</mn>
+                      </mrow>
+                      <mrow data-mjx-texclass="ORD">
+                        <mi>i</mi>
+                        <mo>&#x2212;</mo>
+                        <mn>1</mn>
+                      </mrow>
+                    </munderover>
+                    <msub>
+                      <mi>&#x3C3;</mi>
+                      <mi>j</mi>
+                    </msub>
+                    <msub>
+                      <mi>&#x3B4;</mi>
+                      <mi>j</mi>
+                    </msub>
+                    <mo data-mjx-texclass="CLOSE">)</mo>
+                  </mrow>
+                </mtd>
+              </mtr>
+            </mtable>
+          </math>
+        Using the densities we got from the model, we can calculate a probability 
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+            <mn>1</mn>
+            <mo>&#x2212;</mo>
+            <msup>
+              <mi>e</mi>
+              <mrow data-mjx-texclass="ORD">
+                <mo>&#x2212;</mo>
+                <msub>
+                  <mi>&#x3C3;</mi>
+                  <mi>i</mi>
+                </msub>
+                <msub>
+                  <mi>&#x3B4;</mi>
+                  <mi>i</mi>
+                </msub>
+              </mrow>
+            </msup>
+          </math>
+          which is the probability (<b>p_terminate</b>)of terminating at sample location <b>i</b>. With this probability we can get the transmittance <b>T</b>
+          using <b>torch.cumprod</b>. Using the probability <b>p_terminate</b>, transmittance <b>T</b>, and the color values, we can solve for 
+          <b>color * p_terminate * T</b>.
+      </p>
+
+    <div align="middle">
+    <table style="width=100%">
+        <tr>
+        <td>
+            <img src="output/render_step_1.png" align="left" width="300px"/>
+            <figcaption align="middle">1 Step Render</figcaption>
+            </td>
+            <td>
+            <img src="output/render_step_50.png" align="middle" width="300px"/>
+            <figcaption align="middle">50 Step Render</figcaption>
+            </td>
+            <td>
+            <img src="output/render_step_100.png" align="right" width="300px"/>
+            <figcaption align="middle">100 Step Render</figcaption>
+            </td>
+        <br>
+    </table>
+    </div>
+    <div align="middle">
+        <table style="width=100%">
+            <tr>
+            <td>
+                <img src="output/render_step_500.png" align="left" width="300px"/>
+                <figcaption align="middle">500 Step Render</figcaption>
+                </td>
+                <td>
+                <img src="output/render_step_1000.png" align="middle" width="300px"/>
+                <figcaption align="middle">1000 Step Render</figcaption>
+                </td>
+                <td>
+                <img src="output/render_step_2000.png" align="right" width="300px"/>
+                <figcaption align="middle">2000 Step Render</figcaption>
+                </td>
+            <br>
+        </table>
+        </div>
+    <div align="middle">
+    <table style="width=100%">
+        <tr>
+        <td>
+            <img src="output/training_loss.png" align="middle" width="500px"/>
+            <!-- <figcaption align="middle">20 Epochs</figcaption> -->
+            </td>
+            <td>
+            <img src="output/validation_psnr.png" align="middle" width="500px"/>
+            <!-- <figcaption align="middle">20 Epochs</figcaption> -->
+            </td>
+        <br>
+    </table>
+    </div>
+    <br>
+    <div align="middle">
+        <table style="width=100%">
+            <tr>
+            <td>
+                <img src="output/lego_video.gif" align="middle" width="400px"/>
+                <!-- <figcaption align="middle">20 Epochs</figcaption> -->
+                </td>
+                <td>
+            <br>
+        </table>
+        </div>
+</body>
+
+
+</html>
