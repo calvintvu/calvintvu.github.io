@@ -75,6 +75,9 @@ export default defineConfig({
   vite: {
     plugins: [tailwindcss()],
     resolve: {
+      // Bundle packages that ship .astro sources so Node's ESM loader
+      // does not try to load them during SSR / prerender.
+      noExternal: ['lucide-astro'],
       alias: {
         'virtual:navfolio/page-runtime': fileURLToPath(
           new URL('./src/modules/page-runtime.ts', import.meta.url),
