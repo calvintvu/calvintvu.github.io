@@ -49,8 +49,6 @@ maxResults = 6
 [config.pages.blog]
 title = "blog"
 kicker = "Notebook archive"
-subtitle = "notes and writing."
-note = "Field notes, drafts, and technical margins arranged for slow browsing."
 postsPerPage = 6
 # date-fns date format template.
 dateFormat = "yyyy-MM-dd"
@@ -74,7 +72,6 @@ note = "Connected notes that can be followed in the order they were written."
 [config.pages.projects]
 title = "projects"
 kicker = "Project shelf"
-subtitle = "things i've built."
 note = "A compact shelf for implementation choices, releases, and publishing experiments."
 
 [config.pages.media]

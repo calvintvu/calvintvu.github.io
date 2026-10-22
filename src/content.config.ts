@@ -182,8 +182,6 @@ const defaultPagesConfig = {
   blog: {
     title: 'Writing notes',
     kicker: 'Notebook archive',
-    subtitle: 'Notes from the margins.',
-    note: 'Field notes, drafts, and technical margins arranged for slow browsing.',
     postsPerPage: 6,
     dateFormat: 'MMM d, yyyy',
     metadataSeparator: '·',
@@ -204,7 +202,7 @@ const defaultPagesConfig = {
   projects: {
     title: 'Projects',
     kicker: 'Project shelf',
-    subtitle: 'Small tools and site systems.',
+    // subtitle: 'Small tools and site systems.',
     note: 'A compact shelf for implementation choices, releases, and publishing experiments.',
   },
   vibe: {
