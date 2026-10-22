@@ -71,6 +71,7 @@ const paletteSchema = z.enum([
   'blue-soft',
   'orange-soft',
   'brown-soft',
+  'teal-soft',
 ]);
 
 const collapseStyleSchema = z.enum([
@@ -169,13 +170,6 @@ const topNavLinkSchema = linkSchema
   .refine((link) => Boolean(link.href || link.module), {
     message: 'Top nav links must define either href or module.',
   });
-
-const navigationItemSchema = z.object({
-  icon: z.string(),
-  title: z.string(),
-  subtitle: z.string(),
-  href: z.string(),
-});
 
 const homeLinkSchema = z.object({
   label: z.string(),
@@ -413,40 +407,17 @@ const siteConfig = defineCollection({
       .optional()
       .default(defaultPagesConfig),
     home: z.object({
-      quote: z.object({
-        text: z.array(z.string()).min(1),
-      }),
       intro: z.object({
-        title: z.string(),
-        name: z.string(),
         body: z.array(z.string()).min(1),
       }),
-      latest: z
+      github: z
         .object({
-          count: z.number().int().positive().default(1),
-          heatmapWeeks: z.number().int().positive().default(24),
-          showHeatmapLatest: z.boolean().optional().default(true),
-          excludeDraft: z.boolean().optional().default(true),
-          startDate: z.string().optional().default(''),
-          dateArchiveBaseHref: z.string().optional().default(''),
+          username: z.string().optional().default(''),
+          weeks: z.number().int().positive().max(53).optional().default(53),
         })
         .optional()
-        .default({
-          count: 1,
-          heatmapWeeks: 24,
-          showHeatmapLatest: true,
-          excludeDraft: true,
-          startDate: '',
-          dateArchiveBaseHref: '',
-        }),
-      navigation: z.array(navigationItemSchema),
+        .default({ username: '', weeks: 53 }),
       links: z.array(homeLinkSchema).optional().default([]),
-      doing: z.array(
-        z.object({
-          text: z.string(),
-          mark: z.string(),
-        }),
-      ),
     }),
   }),
 });

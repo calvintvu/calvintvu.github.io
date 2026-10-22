@@ -1,4 +1,40 @@
-@import '@fontsource/maple-mono/400.css';
-@import '@fontsource/maple-mono/500.css';
-@import '@fontsource/maple-mono/600.css';
-@import '@fontsource/maple-mono/700.css';
+/* Nordwand Mono by Tanguy Vivier, SIL Open Font License 1.1: https://github.com/tywr/Nordwand-Mono */
+@font-face {
+  font-family: 'Nordwand Mono';
+  src: url('/fonts/nordwand-mono/NordwandMono-Regular.woff2') format('woff2');
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Nordwand Mono';
+  src: url('/fonts/nordwand-mono/NordwandMono-Italic.woff2') format('woff2');
+  font-style: italic;
+  font-weight: 400;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Nordwand Mono';
+  src: url('/fonts/nordwand-mono/NordwandMono-Medium.woff2') format('woff2');
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Nordwand Mono';
+  src: url('/fonts/nordwand-mono/NordwandMono-SemiBold.woff2') format('woff2');
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Nordwand Mono';
+  src: url('/fonts/nordwand-mono/NordwandMono-Bold.woff2') format('woff2');
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+}

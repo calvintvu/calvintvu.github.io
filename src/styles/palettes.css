@@ -1,0 +1,71 @@
+/* Site palette on top of @navfolio/theme-default: teal accents and teal-tinted neutrals. */
+
+:root[data-palette='teal-soft'] {
+  --accent: #4b8682;
+  --accent-dark: #2b5f5c;
+  --paper-accent: #3f7d79;
+  --paper-accent-soft: #e5f1f0;
+  --paper-fog: #dae9e8;
+  --paper-dust: #e3ebee;
+  --paper-rule: rgba(48, 90, 88, 0.026);
+  --paper-texture-ink: rgba(48, 90, 88, 0.012);
+
+  --black: 33, 42, 41;
+  --gray: 106, 121, 119;
+  --gray-light: 222, 232, 230;
+  --gray-dark: 45, 55, 54;
+  --paper-bg: #fbfdfc;
+  --paper-bg-deep: #eff5f4;
+  --paper-surface: #fefffe;
+  --paper-surface-muted: #f3f8f7;
+  --paper-surface-rgb: 254, 255, 254;
+  --paper-ink: #212a29;
+  --paper-ink-soft: #5d6e6c;
+  --paper-ink-faint: #889997;
+  --paper-control: rgba(242, 248, 247, 0.76);
+  --paper-control-hover: rgba(231, 242, 240, 0.92);
+  --paper-nav: rgba(254, 255, 254, 0.92);
+  --paper-card-wash-top: rgba(254, 255, 254, 0.78);
+  --paper-card-wash-bottom: rgba(243, 248, 247, 0.52);
+  --paper-page-bg: #fbfdfc;
+  --paper-detail-bg: #fbfdfc;
+  --paper-theme-color: #fbfdfc;
+}
+
+:root[data-theme='dark'][data-palette='teal-soft'] {
+  --accent: #8cc6c0;
+  --accent-dark: #c3e5e1;
+  --paper-accent: #8cc6c0;
+  --paper-accent-soft: #203533;
+  --paper-fog: #22393a;
+  --paper-dust: #2b3238;
+  --paper-rule: rgba(204, 232, 228, 0.028);
+  --paper-texture-ink: rgba(204, 232, 228, 0.032);
+
+  --black: 230, 236, 234;
+  --gray: 160, 178, 175;
+  --gray-light: 52, 66, 65;
+  --gray-dark: 220, 230, 228;
+  --paper-bg: #141a1a;
+  --paper-bg-deep: #0f1414;
+  --paper-surface: #1b2323;
+  --paper-surface-muted: #222d2c;
+  --paper-surface-rgb: 27, 35, 35;
+  --paper-line: rgba(204, 232, 228, 0.08);
+  --paper-line-strong: rgba(204, 232, 228, 0.14);
+  --paper-ink: #e6ecea;
+  --paper-ink-soft: #abbcb9;
+  --paper-ink-faint: #839592;
+  --paper-control: rgba(36, 49, 48, 0.72);
+  --paper-control-hover: rgba(45, 62, 60, 0.88);
+  --paper-nav: rgba(27, 35, 35, 0.92);
+  --paper-card-wash-top: rgba(34, 45, 44, 0.72);
+  --paper-card-wash-bottom: rgba(23, 30, 30, 0.52);
+  --paper-page-bg: linear-gradient(180deg, rgba(20, 26, 26, 0.98) 0%, rgba(15, 20, 20, 0.98) 100%);
+  --paper-detail-bg: linear-gradient(
+    180deg,
+    rgba(20, 26, 26, 0.98) 0%,
+    rgba(15, 20, 20, 0.98) 100%
+  );
+  --paper-theme-color: #141a1a;
+}

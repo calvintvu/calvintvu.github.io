@@ -1,0 +1,64 @@
+---
+// Swap the scene by changing the import here and in the <script> below.
+// Every piece is listed at https://ascii.rest
+import * as piece from 'ascii.rest/pieces/night-coast';
+
+interface Props {
+  /** Draw in the theme's ink instead of the scene's own palette. */
+  mono?: boolean;
+  class?: string;
+}
+
+const { mono = true, class: className } = Astro.props;
+const { meta } = piece;
+const aspect = `${meta.cols} / ${meta.rows * (meta.cell ?? 2)}`;
+---
+
+<ascii-scene class:list={['ascii-scene', className]} data-mono={mono ? '' : undefined}>
+  <canvas
+    role="img"
+    aria-label={meta.name}
+    style={`aspect-ratio: ${aspect};${mono ? '' : ` background: ${meta.ground};`}`}></canvas>
+</ascii-scene>
+
+<script>
+  import { mount } from 'ascii.rest';
+  import * as piece from 'ascii.rest/pieces/night-coast';
+
+  const monoPiece = {
+    ...piece,
+    meta: { ...piece.meta, palette: undefined, ground: undefined },
+  };
+
+  class AsciiScene extends HTMLElement {
+    stop?: () => void;
+
+    connectedCallback() {
+      const canvas = this.querySelector('canvas');
+      if (!canvas) return;
+      this.stop = mount(canvas, this.hasAttribute('data-mono') ? monoPiece : piece);
+    }
+
+    disconnectedCallback() {
+      this.stop?.();
+      this.stop = undefined;
+    }
+  }
+
+  if (!customElements.get('ascii-scene')) customElements.define('ascii-scene', AsciiScene);
+</script>
+
+<style>
+  .ascii-scene {
+    display: block;
+    color: var(--paper-accent);
+    user-select: none;
+  }
+
+  canvas {
+    display: block;
+    width: 100%;
+    max-height: 420px;
+    object-fit: cover;
+  }
+</style>

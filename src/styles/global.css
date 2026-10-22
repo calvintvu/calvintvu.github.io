@@ -1,2 +1,10 @@
 @import './fonts.css';
+@import './palettes.css';
+@import './minimal.css';
+
+html:root {
+  --font-ui-cjk:
+    var(--font-config-en), var(--font-config-zh-subset), var(--font-config-zh), 'PingFang SC',
+    'Microsoft YaHei', system-ui, sans-serif;
+}
 @import 'katex/dist/katex.min.css';

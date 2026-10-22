@@ -1,0 +1,86 @@
+---
+import { getGithubContributions } from '../../utils/github-contributions';
+
+interface Props {
+  username: string;
+  weeks?: number;
+}
+
+const { username, weeks = 53 } = Astro.props;
+const calendar = username ? await getGithubContributions(username, weeks) : null;
+const profileUrl = `https://github.com/${username}`;
+---
+
+{
+  calendar && (
+    <article class="contributions" aria-label={`GitHub contributions for ${username}`}>
+      <div class="contribution-grid" style={`--week-count: ${calendar.weeks.length};`}>
+        {calendar.weeks.map((week) =>
+          week.map((day) =>
+            day ? (
+              <span class={`cell level-${day.level}`} title={day.label} />
+            ) : (
+              <span class="cell empty" aria-hidden="true" />
+            ),
+          ),
+        )}
+      </div>
+      <a class="contribution-total" href={profileUrl} target="_blank" rel="noreferrer">
+        {calendar.total.toLocaleString('en-US')} contributions in the last year
+      </a>
+    </article>
+  )
+}
+
+<style>
+  .contributions {
+    display: grid;
+    gap: 8px;
+    width: 100%;
+  }
+
+  .contribution-grid {
+    display: grid;
+    grid-auto-flow: column;
+    grid-template-rows: repeat(7, auto);
+    grid-template-columns: repeat(var(--week-count), minmax(0, 1fr));
+    gap: 2px;
+  }
+
+  .cell {
+    aspect-ratio: 1;
+    border-radius: 1.5px;
+    background: color-mix(in srgb, var(--paper-ink) 7%, transparent);
+  }
+
+  .cell.empty {
+    background: transparent;
+  }
+
+  .level-1 {
+    background: color-mix(in srgb, var(--paper-accent) 45%, transparent);
+  }
+
+  .level-2 {
+    background: color-mix(in srgb, var(--paper-accent) 65%, transparent);
+  }
+
+  .level-3 {
+    background: color-mix(in srgb, var(--paper-accent) 85%, transparent);
+  }
+
+  .level-4 {
+    background: var(--paper-accent);
+  }
+
+  .contribution-total {
+    justify-self: end;
+    color: var(--paper-ink-faint);
+    font-size: 0.72rem;
+    text-decoration: none;
+  }
+
+  .contribution-total:hover {
+    color: var(--paper-accent);
+  }
+</style>

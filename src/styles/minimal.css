@@ -1,0 +1,213 @@
+/*
+ * Minimal layer over @navfolio/theme-default: flat, text-first sections.
+ * Every selector starts with html:root so it outranks the theme's global
+ * rules and Astro's scoped component styles without !important.
+ */
+
+/* Page headers (blog, categories, series, projects, media) */
+html:root .archive-header-shared,
+html:root .media-hero {
+  display: block;
+}
+
+html:root .archive-header-shared .archive-kicker,
+html:root .archive-header-shared .archive-note,
+html:root .media-kicker,
+html:root .media-note {
+  display: none;
+}
+
+html:root .archive-header-shared .archive-title,
+html:root .media-title {
+  max-width: none;
+  margin: 0;
+  color: var(--paper-ink);
+  font-size: 1.6rem;
+  font-weight: 600;
+  line-height: 1.25;
+}
+
+html:root .archive-header-shared .archive-copy {
+  display: block;
+  max-width: 62ch;
+  margin: 6px 0 0;
+  text-align: left;
+}
+
+html:root .archive-header-shared .archive-subtitle,
+html:root .media-subtitle {
+  max-width: 62ch;
+  margin: 6px 0 0;
+  color: var(--paper-ink-soft);
+  font-family: var(--font-body);
+  font-size: 0.92rem;
+  line-height: 1.6;
+}
+
+html:root .archive-header-shared .archive-subtitle:empty,
+html:root .media-subtitle:empty {
+  display: none;
+}
+
+html:root .page-header-spacing {
+  margin-bottom: 28px;
+}
+
+/* Category / series filters */
+html:root .group-nav {
+  margin: 0 0 20px;
+}
+
+html:root .topic-panel {
+  padding-right: 0;
+  border: 0;
+}
+
+html:root .topic-list {
+  gap: 4px 18px;
+}
+
+html:root .topic-chip,
+html:root .topic-toggle {
+  min-height: 28px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--paper-ink-soft);
+  font-size: 0.86rem;
+  font-weight: 500;
+}
+
+html:root .topic-chip:hover,
+html:root .topic-toggle:hover {
+  background: transparent;
+  color: var(--paper-accent);
+  transform: none;
+}
+
+html:root .topic-chip.is-active {
+  background: transparent;
+  color: var(--paper-accent);
+}
+
+html:root .topic-chip.is-active::before {
+  display: none;
+}
+
+html:root .group-links {
+  min-height: 28px;
+  font-size: 0.86rem;
+  font-weight: 500;
+}
+
+html:root .group-links a {
+  color: var(--paper-ink-soft);
+  text-decoration: none;
+}
+
+html:root .group-links a .site-icon {
+  display: none;
+}
+
+html:root .group-links a:hover,
+html:root .group-links a.is-active {
+  color: var(--paper-accent);
+}
+
+/* Post lists */
+html:root .post-link,
+html:root .post-item:first-child .post-link {
+  grid-template-columns: minmax(0, 1fr);
+  height: auto;
+  min-height: 0;
+  padding: 14px 0;
+  border: 0;
+}
+
+html:root .post-link:hover {
+  transform: none;
+}
+
+html:root .post-link .post-copy {
+  width: 100%;
+}
+
+html:root .post-index,
+html:root .thumb-wrap {
+  display: none;
+}
+
+html:root .post-link .title,
+html:root .post-item:first-child .title {
+  font-size: 1.12rem;
+  font-weight: 500;
+  line-height: 1.4;
+}
+
+html:root .title-link::before {
+  display: none;
+}
+
+@media (max-width: 720px) {
+  html:root .post-link .title,
+  html:root .post-item:first-child .title {
+    display: flex;
+    flex-wrap: wrap;
+    font-size: 1.08rem;
+  }
+
+  html:root .post-link .title-link {
+    white-space: normal;
+  }
+
+  html:root .post-link .post-pin {
+    margin-top: 0;
+  }
+}
+
+html:root .post-pin {
+  min-height: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+}
+
+html:root .post-link .date {
+  margin-top: 4px;
+  color: var(--paper-ink-faint);
+  font-size: 0.8rem;
+}
+
+html:root .post-excerpt {
+  margin-top: 6px;
+  color: var(--paper-ink-soft);
+  font-size: 0.9rem;
+}
+
+/* Tags and pills */
+html:root .post-tag,
+html:root .tag {
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  color: var(--paper-ink-faint);
+}
+
+/* Media shelf */
+html:root .media-section-heading h2 {
+  font-size: 1.15rem;
+  font-weight: 500;
+}
+
+/* Archive pagination */
+html:root .pagination-link,
+html:root .pagination-number {
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+html:root .pagination-number.current {
+  color: var(--paper-accent);
+}
