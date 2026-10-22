@@ -76,8 +76,8 @@ note = "A compact shelf for implementation choices, releases, and publishing exp
 
 [config.pages.media]
 title = "media"
-subtitle = "books, films, and music."
-note = "One page for books, movies, series, albums, and podcasts."
+subtitle = "i love to produce edm and edit content in my free time. please check out my music and videos!"
+note = "Singles I've released and videos from my travels."
 
 [config.comments.giscus]
 repo = ""
@@ -130,7 +130,7 @@ module = "projects"
 
 [[config.topNav.links]]
 label = "media"
-module = "media"
+href = "/media"
 
 [[config.topNav.links]]
 label = "about"
@@ -140,7 +140,7 @@ href = "/about"
 [config.home.intro]
 # Each line is a paragraph; [text](url) makes a link.
 body = [
-  "software engineer. currently at [centauri ai](https://centauri-ai.tech/).",
+  "software engineer & digital creator. currently @ [centauri-ai](https://centauri-ai.tech/).",
 ]
 
 [config.home.github]

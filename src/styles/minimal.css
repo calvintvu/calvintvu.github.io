@@ -15,7 +15,6 @@ html:root .archive-header-shared .archive-copy,
 html:root .article-header-archive .meta-line,
 html:root .archive-header-shared > .archive-note,
 html:root .media-kicker,
-html:root .media-subtitle,
 html:root .media-note {
   display: none;
 }
