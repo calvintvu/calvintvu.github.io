@@ -48,15 +48,3 @@ vercel.json
 # Theme unit tests
 **/*.test.ts
 src/types/bun-test.d.ts
-
-# Theme demo media (replace locally, then remove these lines to commit yours)
-public/audio/
-public/images/
-src/assets/figure/
-
-# Theme demo content (remove these lines when you commit your own posts)
-src/content/about.mdx
-src/content/blog/
-src/content/projects/
-src/content/vibe/
-src/content/media/
