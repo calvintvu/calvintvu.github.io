@@ -1,0 +1,276 @@
+[config.site]
+title = "navfolio"
+description = "A personal navigation portfolio starter built with Astro."
+pageTitle = "navfolio | Digital Publication Space"
+pageDescription = "A calm AI-native personal publication space for notes, links, and writing."
+url = "https://astro.navfolio.site"
+repository = "https://github.com/dodolalorc/astro-navfolio"
+footerNote = "Released as an open-source starter."
+
+[config.theme]
+# Available palettes:
+# green-soft, green-vivid, rose-soft, pink-soft, purple-soft, blue-soft, orange-soft, brown-soft
+palette = "green-soft"
+# Native UI language. Supported value: en. Unknown values fall back to en.
+lang = "en"
+
+[config.fonts]
+# English / code-style UI font
+en = "Maple Mono"
+code = "Monaco"
+# Built-in options include ChillRoundM and LXGW WenKai
+# CJK reading font
+zh = "ChillRoundM"
+# Full CJK font file
+file = "/fonts/ChillRoundM.ttf"
+
+[config.code]
+lightTheme = "catppuccin-latte"
+darkTheme = "catppuccin-macchiato"
+lineNumbers = true
+wrap = true
+preserveIndent = true
+collapseStyle = "collapsible-auto"
+
+[config.math]
+render = "katex" # "katex" | "mathjax"
+
+[config.comments]
+enabled = false
+provider = "none"
+show_on_posts = true
+
+[config.search]
+enabled = true
+shortcut = "mod+k"
+placeholder = "Search notes..."
+maxResults = 6
+
+[config.pages.blog]
+title = "Writing notes"
+kicker = "Notebook archive"
+subtitle = "Notes from the margins."
+note = "Field notes, drafts, and technical margins arranged for slow browsing."
+postsPerPage = 6
+# date-fns date format template.
+dateFormat = "yyyy-MM-dd"
+# Metadata separator. Use symbols like "|" or "/", or the special value "icon".
+metadataSeparator = "icon"
+# Post list cover style: "card" keeps a bordered thumbnail; "mask" blends the image to the right.
+coverImageStyle = "mask"
+
+[config.pages.blog.categories]
+title = "Categories"
+kicker = "Browse notes"
+subtitle = ""
+note = "A quiet index of recurring topics, gathered from article frontmatter."
+
+[config.pages.blog.series]
+title = "Series"
+kicker = "Reading paths"
+subtitle = ""
+note = "Connected notes that can be followed in the order they were written."
+
+[config.pages.projects]
+title = "Projects"
+kicker = "Project shelf"
+subtitle = "Small tools and site systems."
+note = "A compact shelf for implementation choices, releases, and publishing experiments."
+
+[config.pages.media]
+title = "Media"
+subtitle = "Books, films, shows, and albums I've taken in — plus a note on how they landed."
+note = "One page for books, movies, series, albums, and podcasts."
+
+[config.comments.giscus]
+repo = ""
+repo_id = ""
+category = ""
+category_id = ""
+mapping = "pathname"
+strict = "0"
+reactions_enabled = "1"
+emit_metadata = "0"
+input_position = "top"
+light_theme = "light"
+dark_theme = "dark"
+lang = "en"
+loading = "lazy"
+
+[config.comments.utterances]
+repo = ""
+issue_term = "pathname"
+label = "comment"
+theme = "github-light"
+
+[config.comments.waline]
+server_url = ""
+lang = "en"
+dark = "html.dark"
+pageview = true
+comment = true
+
+[config.profile]
+name = "navfolio"
+handle = "@navfolio"
+role = "A Cat Developer"
+email = "hello@navfolio.site"
+website = "https://astro.navfolio.site/"
+github = "https://github.com/dodolalorc/astro-navfolio"
+avatar = "/images/logo-thin.webp"
+
+[[config.topNav.links]]
+label = "Home"
+href = "/"
+
+[[config.topNav.links]]
+label = "Blog"
+href = "/blog"
+
+[[config.topNav.links]]
+label = "Projects"
+module = "projects"
+
+[[config.topNav.links]]
+label = "Media"
+module = "media"
+
+[[config.topNav.links]]
+label = "About"
+href = "/about"
+
+[config.home]
+
+[config.home.quote]
+text = [
+  "Navigate your world,",
+  "Showcase your story,",
+  "and keep everything in one place.",
+]
+
+[config.home.intro]
+title = "here is navfolio"
+name = "navfolio"
+body = [
+  "The name combines \"Navigation\" and \"Portfolio\".",
+  "Navfolio prioritizes lightweight organization, seamless reading, and developer-friendly aesthetics.",
+  "It’s less a resume than a personal OS for your ideas, projects, notes, and online presence.",
+]
+
+[config.home.latest]
+count = 1
+heatmapWeeks = 24
+showHeatmapLatest = true
+excludeDraft = true
+startDate = ""
+dateArchiveBaseHref = ""
+
+[[config.home.navigation]]
+icon = "compass"
+title = "Portfolio"
+subtitle = "Selected work and case studies"
+href = "https://astro.navfolio.site/"
+
+[[config.home.navigation]]
+icon = "pen"
+title = "Blog"
+subtitle = "Essays, notes, and field reports"
+href = "/blog"
+
+[[config.home.navigation]]
+icon = "briefcase"
+title = "Resume"
+subtitle = "Career profile and experience"
+href = "https://github.com/dodolalorc/navfolio"
+
+[[config.home.navigation]]
+icon = "github"
+title = "Open Source"
+subtitle = "Code, experiments, and tools"
+href = "https://github.com/dodolalorc/astro-navfolio"
+
+[[config.home.links]]
+label = "GitHub"
+icon = "github"
+tooltip = "https://github.com/dodolalorc/astro-navfolio"
+copy = false
+
+[[config.home.links]]
+label = "LinkedIn"
+icon = "linkedin"
+tooltip = "https://www.linkedin.com/"
+copy = false
+
+[[config.home.links]]
+label = "X"
+icon = "x"
+tooltip = "" # Leave empty to hide this link item.
+copy = false
+
+[[config.home.links]]
+label = "RSS"
+icon = "rss"
+tooltip = "/rss.xml"
+copy = false
+
+[[config.home.links]]
+label = "Email"
+icon = "mail"
+tooltip = "hello@navfolio.site"
+copy = true
+
+[[config.home.links]]
+label = "QQ"
+icon = "qq"
+tooltip = "123456789"
+copy = true
+
+[[config.home.links]]
+label = "WeChat"
+icon = "wechat"
+tooltip = "navfolio"
+copy = true
+
+[[config.home.links]]
+label = "Weibo"
+icon = "weibo"
+tooltip = "https://weibo.com/"
+copy = false
+
+[[config.home.links]]
+label = "Xiaohongshu"
+icon = "xiaohongshu"
+tooltip = "https://www.xiaohongshu.com/"
+copy = false
+
+[[config.home.links]]
+label = "Zhihu"
+icon = "zhihu"
+tooltip = "https://www.zhihu.com/"
+copy = false
+
+[[config.home.links]]
+label = "Bilibili"
+icon = "bilibili"
+tooltip = "https://www.bilibili.com/"
+copy = false
+
+[[config.home.doing]]
+text = "Shipping a personal dashboard template"
+mark = "01"
+
+[[config.home.doing]]
+text = "Writing reusable notes for future projects"
+mark = "02"
+
+[[config.home.doing]]
+text = "Improving static-site publishing workflow"
+mark = "03"
+
+[[config.home.doing]]
+text = "Collecting useful developer resources"
+mark = "04"
+
+[[config.home.doing]]
+text = "Exploring small open-source ideas"
+mark = "05"
