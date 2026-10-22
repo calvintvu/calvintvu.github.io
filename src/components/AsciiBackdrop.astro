@@ -1,0 +1,68 @@
+---
+interface Props {
+  class?: string;
+}
+
+const { class: className } = Astro.props;
+---
+
+<ascii-backdrop class:list={['ascii-backdrop', className]} aria-hidden="true">
+  <canvas></canvas>
+</ascii-backdrop>
+
+<script>
+  import { mount } from 'ascii.rest';
+  import { tide } from '../utils/ascii-tide';
+
+  const CELL_PX = 8;
+
+  class AsciiBackdrop extends HTMLElement {
+    stop?: () => void;
+    observer?: ResizeObserver;
+    cols = 0;
+    rows = 0;
+
+    connectedCallback() {
+      this.observer = new ResizeObserver(() => this.fit());
+      this.observer.observe(this);
+      this.fit();
+    }
+
+    disconnectedCallback() {
+      this.observer?.disconnect();
+      this.stop?.();
+      this.stop = undefined;
+    }
+
+    fit() {
+      const canvas = this.querySelector('canvas');
+      if (!canvas || !this.clientWidth) return;
+      const cols = Math.max(24, Math.round(this.clientWidth / CELL_PX));
+      const rows = Math.max(8, Math.round(this.clientHeight / (CELL_PX * 2)));
+      if (cols === this.cols && rows === this.rows) return;
+      this.cols = cols;
+      this.rows = rows;
+      this.stop?.();
+      this.stop = mount(canvas, tide(cols, rows));
+    }
+  }
+
+  if (!customElements.get('ascii-backdrop')) customElements.define('ascii-backdrop', AsciiBackdrop);
+</script>
+
+<style>
+  .ascii-backdrop {
+    display: block;
+    color: var(--paper-accent);
+    opacity: 0.22;
+    pointer-events: none;
+    user-select: none;
+    mask-image: linear-gradient(to top, #000 15%, transparent);
+  }
+
+  canvas {
+    display: block;
+    width: 100%;
+    height: 100%;
+  }
+</style>

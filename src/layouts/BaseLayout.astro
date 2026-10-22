@@ -2,6 +2,7 @@
 import ThemeBaseLayout from '@navfolio/theme-default/components/BaseLayout.astro';
 import BaseHead from '../components/BaseHead.astro';
 import BlogTopNav from '../components/blog/BlogTopNav.astro';
+import Footer from '../components/Footer.astro';
 import ScrollToTopButton from '../components/ScrollToTopButton.astro';
 import { getSiteConfig } from '../data/site';
 import { getHtmlLang } from '../utils/ui-text';
@@ -15,6 +16,7 @@ const { title, description } = Astro.props;
 const siteConfig = await getSiteConfig();
 const palette = siteConfig.theme.palette;
 const htmlLang = getHtmlLang(siteConfig);
+const hasBackdrop = Astro.slots.has('backdrop');
 ---
 
 <ThemeBaseLayout htmlLang={htmlLang} palette={palette}>
@@ -24,8 +26,46 @@ const htmlLang = getHtmlLang(siteConfig);
   <Fragment slot="navigation">
     <BlogTopNav />
   </Fragment>
-  <slot />
+  <div class="page-frame">
+    <slot />
+    <Footer />
+    {
+      hasBackdrop && (
+        <div class="page-backdrop" data-pagefind-ignore>
+          <slot name="backdrop" />
+        </div>
+      )
+    }
+  </div>
   <Fragment slot="after-content">
     <ScrollToTopButton />
   </Fragment>
 </ThemeBaseLayout>
+
+<style>
+  .page-frame {
+    position: relative;
+    isolation: isolate;
+    display: flex;
+    flex-direction: column;
+    min-height: 100svh;
+  }
+
+  .page-frame > :global(main) {
+    flex: 1 0 auto;
+  }
+
+  .page-backdrop {
+    position: absolute;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    z-index: -1;
+    height: 420px;
+    pointer-events: none;
+  }
+
+  .page-backdrop :global(.ascii-backdrop) {
+    height: 100%;
+  }
+</style>
