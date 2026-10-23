@@ -110,10 +110,11 @@ comment = true
 [config.profile]
 name = "calvin vu"
 handle = "@calvintvu"
-role = ""
-email = "hello@navfolio.site"
+role = "sup"
+email = "vucalvin95@gmail.com"
 website = "https://calvintvu.github.io/"
 github = "https://github.com/calvintvu"
+linkedin = "https://www.linkedin.com/in/calvintvu"
 avatar = "https://github.com/calvintvu.png"
 
 [[config.topNav.links]]
@@ -152,6 +153,18 @@ weeks = 53
 label = "GitHub"
 icon = "github"
 tooltip = "https://github.com/calvintvu"
+copy = false
+
+[[config.home.links]]
+label = "linkedin"
+icon = "linkedin"
+tooltip = "https://www.linkedin.com/in/calvintvu"
+copy = false
+
+[[config.home.links]]
+label = "linktree"
+icon = "linktree"
+tooltip = "https://linktr.ee/calvinvuxar"
 copy = false
 
 [[config.home.links]]

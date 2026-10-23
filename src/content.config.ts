@@ -376,6 +376,7 @@ const siteConfig = defineCollection({
       email: z.email(),
       website: z.url(),
       github: z.url(),
+      linkedin: z.url().optional(),
       avatar: z.string(),
     }),
     topNav: z.object({

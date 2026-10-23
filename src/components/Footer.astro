@@ -1,5 +1,5 @@
 ---
-import { Compass, Github, Mail } from 'lucide-astro';
+import { Compass, Github, Linkedin, Mail } from 'lucide-astro';
 import { getSiteConfig } from '../data/site';
 
 const { profile, site } = await getSiteConfig();
@@ -19,6 +19,14 @@ const year = new Date().getFullYear();
       <span class="sr-only">Open GitHub profile</span>
       <Github size={18} stroke-width={1.9} aria-hidden="true" focusable="false" />
     </a>
+    {
+      profile.linkedin && (
+        <a href={profile.linkedin} target="_blank" rel="noreferrer">
+          <span class="sr-only">Open LinkedIn profile</span>
+          <Linkedin size={18} stroke-width={1.9} aria-hidden="true" focusable="false" />
+        </a>
+      )
+    }
     <a href={`mailto:${profile.email}`}>
       <span class="sr-only">Email</span>
       <Mail size={18} stroke-width={1.9} aria-hidden="true" focusable="false" />
