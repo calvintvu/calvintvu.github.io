@@ -43,12 +43,12 @@ show_on_posts = true
 [config.search]
 enabled = true
 shortcut = "mod+k"
-placeholder = "Search notes..."
+placeholder = "search..."
 maxResults = 6
 
 [config.pages.blog]
 title = "notes"
-kicker = "Notebook archive"
+kicker = "journal"
 postsPerPage = 6
 # date-fns date format template.
 dateFormat = "yyyy-MM-dd"
@@ -59,19 +59,19 @@ coverImageStyle = "mask"
 
 [config.pages.blog.categories]
 title = "categories"
-kicker = "Browse notes"
+kicker = "browse notes"
 subtitle = ""
 note = "A quiet index of recurring topics, gathered from article frontmatter."
 
 [config.pages.blog.series]
 title = "series"
-kicker = "Reading paths"
+kicker = "reading paths"
 subtitle = ""
 note = "Connected notes that can be followed in the order they were written."
 
 [config.pages.projects]
 title = "projects"
-kicker = "Project shelf"
+kicker = "project shelf"
 note = "A compact shelf for implementation choices, releases, and publishing experiments."
 
 [config.pages.media]
@@ -150,7 +150,7 @@ username = "calvintvu"
 weeks = 53
 
 [[config.home.links]]
-label = "GitHub"
+label = "github"
 icon = "github"
 tooltip = "https://github.com/calvintvu"
 copy = false
@@ -168,7 +168,7 @@ tooltip = "https://linktr.ee/calvinvuxar"
 copy = false
 
 [[config.home.links]]
-label = "RSS"
+label = "rss"
 icon = "rss"
 tooltip = "/rss.xml"
 copy = false
