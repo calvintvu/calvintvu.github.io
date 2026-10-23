@@ -87,78 +87,74 @@ function withBase(href: string) {
 >
   <Content />
 
-  {
-    relatedProjects.length > 0 ? (
-      <section class="project-grid" aria-label={i18n.t('projects.listLabel')}>
-        {relatedProjects.map((project) => {
-          const ProjectIcon = projectIcons[project.data.icon] ?? Github;
-          const projectHref = withBase(`${projectsRoute}/${project.id}/`);
+  {relatedProjects.length > 0 ? (
+    <section class="project-grid" aria-label={i18n.t('projects.listLabel')}>
+      {relatedProjects.map((project) => {
+        const ProjectIcon = projectIcons[project.data.icon] ?? Github;
+        const projectHref = withBase(`${projectsRoute}/${project.id}/`);
 
-          return (
-            <article
-              class="project-card"
-              style={
-                project.data.iconColor
-                  ? `--project-icon-color: ${project.data.iconColor}`
-                  : undefined
-              }
-            >
-              <div class="project-card-heading">
-                <ProjectIcon class="project-icon" size={22} strokeWidth={1.55} aria-hidden="true" />
-                <h2>
-                  <a href={projectHref}>{project.data.title}</a>
-                </h2>
-              </div>
-              <p>{project.data.description}</p>
-              <footer class="project-card-footer">
-                <span class="project-meta">
-                  <FormattedDate date={project.data.date} />
+        return (
+          <article
+            class="project-card"
+            style={
+              project.data.iconColor ? `--project-icon-color: ${project.data.iconColor}` : undefined
+            }
+          >
+            <div class="project-card-heading">
+              <ProjectIcon class="project-icon" size={22} strokeWidth={1.55} aria-hidden="true" />
+              <h2>
+                <a href={projectHref}>{project.data.title}</a>
+              </h2>
+            </div>
+            <p>{project.data.description}</p>
+            <footer class="project-card-footer">
+              <span class="project-meta">
+                <FormattedDate date={project.data.date} />
+              </span>
+              {project.data.authors.length > 0 && (
+                <span class="project-authors" aria-label={i18n.t('projects.authorsLabel')}>
+                  {project.data.authors.map((author) =>
+                    author.url ? (
+                      <a href={author.url}>{author.name}</a>
+                    ) : (
+                      <span>{author.name}</span>
+                    ),
+                  )}
                 </span>
-                {project.data.authors.length > 0 && (
-                  <span class="project-authors" aria-label={i18n.t('projects.authorsLabel')}>
-                    {project.data.authors.map((author) =>
-                      author.url ? (
-                        <a href={author.url}>{author.name}</a>
+              )}
+              {project.data.links.length > 0 && (
+                <span class="project-links" aria-label={i18n.t('projects.linksLabel')}>
+                  {project.data.links.map((link) => (
+                    <a href={link.href} target="_blank" rel="noopener noreferrer">
+                      {link.kind === 'github' ? (
+                        <Github size={13} strokeWidth={1.8} aria-hidden="true" />
                       ) : (
-                        <span>{author.name}</span>
-                      ),
-                    )}
-                  </span>
-                )}
-                {project.data.links.length > 0 && (
-                  <span class="project-links" aria-label={i18n.t('projects.linksLabel')}>
-                    {project.data.links.map((link) => (
-                      <a href={link.href} target="_blank" rel="noopener noreferrer">
-                        {link.kind === 'github' ? (
-                          <Github size={13} strokeWidth={1.8} aria-hidden="true" />
-                        ) : (
-                          <ExternalLink size={13} strokeWidth={1.8} aria-hidden="true" />
-                        )}
-                        {link.label}
-                      </a>
-                    ))}
-                  </span>
-                )}
-                {project.data.tags.length > 0 && (
-                  <span class="project-tags" aria-label={i18n.t('projects.tagsLabel')}>
-                    {project.data.tags.slice(0, 3).map((tag) => (
-                      <small>{tag}</small>
-                    ))}
-                  </span>
-                )}
-              </footer>
-            </article>
-          );
-        })}
-      </section>
-    ) : (
-      <section class="project-empty" aria-label={i18n.t('projects.emptyLabel')}>
-        <span aria-hidden="true">01</span>
-        <h2>{i18n.t('projects.emptyTitle')}</h2>
-        <p>{i18n.t('projects.emptyNote')}</p>
-      </section>
-    )
-  }
+                        <ExternalLink size={13} strokeWidth={1.8} aria-hidden="true" />
+                      )}
+                      {link.label}
+                    </a>
+                  ))}
+                </span>
+              )}
+              {project.data.tags.length > 0 && (
+                <span class="project-tags" aria-label={i18n.t('projects.tagsLabel')}>
+                  {project.data.tags.slice(0, 3).map((tag) => (
+                    <small>{tag}</small>
+                  ))}
+                </span>
+              )}
+            </footer>
+          </article>
+        );
+      })}
+    </section>
+  ) : (
+    <section class="project-empty" aria-label={i18n.t('projects.emptyLabel')}>
+      <span aria-hidden="true">01</span>
+      <h2>{i18n.t('projects.emptyTitle')}</h2>
+      <p>{i18n.t('projects.emptyNote')}</p>
+    </section>
+  )}
 </BlogArticle>
 
 <style>

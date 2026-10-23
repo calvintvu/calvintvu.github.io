@@ -314,47 +314,47 @@ const sections: {
             <p class="media-subtitle">{pageMeta.subtitle}</p>
             <p class="media-note">{pageMeta.note}</p>
           </header>
-          {
-            sections.map((section) => (
-              <section class="media-section" id={section.id}>
-                <div class="media-section-heading">
-                  <h2>{section.label}</h2>
-                  <span class="media-count">{section.description}</span>
-                </div>
-                {section.tiles?.length ? (
-                  <div class:list={['media-tiles', `media-tiles--${section.tileAspect}`]}>
-                    {section.tiles.map((tile) => (
-                      <a class="media-tile" href={tile.href} target="_blank" rel="noreferrer">
-                        <img
-                          src={tile.image}
-                          alt={`${tile.title} cover`}
-                          loading="lazy"
-                          decoding="async"
-                        />
-                        <strong>{tile.title}</strong>
-                        <span class="media-link-meta">{tile.meta}</span>
-                      </a>
-                    ))}
-                  </div>
-                ) : null}
-                <div class="media-links">
-                  {section.links.map((link) => (
-                    <a class="media-link" href={link.href} target="_blank" rel="noreferrer">
-                      <span>
-                        <strong>{link.title}</strong>
-                        <span class="media-link-meta">{link.meta}</span>
-                      </span>
-                      <ArrowUpRight size={18} strokeWidth={1.6} aria-hidden="true" />
+          {sections.map((section) => (
+            <section class="media-section" id={section.id}>
+              <div class="media-section-heading">
+                <h2>{section.label}</h2>
+                <span class="media-count">{section.description}</span>
+              </div>
+              {section.tiles?.length ? (
+                <div class:list={['media-tiles', `media-tiles--${section.tileAspect}`]}>
+                  {section.tiles.map((tile) => (
+                    <a class="media-tile" href={tile.href} target="_blank" rel="noreferrer">
+                      <img
+                        src={tile.image}
+                        alt={`${tile.title} cover`}
+                        loading="lazy"
+                        decoding="async"
+                      />
+                      <strong>{tile.title}</strong>
+                      <span class="media-link-meta">{tile.meta}</span>
                     </a>
                   ))}
                 </div>
-              </section>
-            ))
-          }
+              ) : null}
+              <div class="media-links">
+                {section.links.map((link) => (
+                  <a class="media-link" href={link.href} target="_blank" rel="noreferrer">
+                    <span>
+                      <strong>{link.title}</strong>
+                      <span class="media-link-meta">{link.meta}</span>
+                    </span>
+                    <ArrowUpRight size={18} strokeWidth={1.6} aria-hidden="true" />
+                  </a>
+                ))}
+              </div>
+            </section>
+          ))}
         </div>
         <nav class="media-nav" aria-label="Media sections">
           <p>Browse</p>
-          {sections.map((section) => <a href={`#${section.id}`}>{section.label}</a>)}
+          {sections.map((section) => (
+            <a href={`#${section.id}`}>{section.label}</a>
+          ))}
         </nav>
       </div>
     </main>

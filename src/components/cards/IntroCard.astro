@@ -24,25 +24,23 @@ const isExternal = (href: string) => /^https?:\/\//.test(href);
 ---
 
 <article class="intro-card">
-  {
-    intro.body.map((line) => (
-      <p>
-        {toSegments(line).map((segment) =>
-          segment.href ? (
-            <a
-              href={segment.href}
-              target={isExternal(segment.href) ? '_blank' : undefined}
-              rel={isExternal(segment.href) ? 'noreferrer' : undefined}
-            >
-              {segment.text}
-            </a>
-          ) : (
-            segment.text
-          ),
-        )}
-      </p>
-    ))
-  }
+  {intro.body.map((line) => (
+    <p>
+      {toSegments(line).map((segment) =>
+        segment.href ? (
+          <a
+            href={segment.href}
+            target={isExternal(segment.href) ? '_blank' : undefined}
+            rel={isExternal(segment.href) ? 'noreferrer' : undefined}
+          >
+            {segment.text}
+          </a>
+        ) : (
+          segment.text
+        ),
+      )}
+    </p>
+  ))}
 </article>
 
 <style>

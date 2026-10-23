@@ -18,7 +18,8 @@ const aspect = `${meta.cols} / ${meta.rows * (meta.cell ?? 2)}`;
   <canvas
     role="img"
     aria-label={meta.name}
-    style={`aspect-ratio: ${aspect};${mono ? '' : ` background: ${meta.ground};`}`}></canvas>
+    style={`aspect-ratio: ${aspect};${mono ? '' : ` background: ${meta.ground};`}`}
+  ></canvas>
 </ascii-scene>
 
 <script>

@@ -11,26 +11,24 @@ const calendar = username ? await getGithubContributions(username, weeks) : null
 const profileUrl = `https://github.com/${username}`;
 ---
 
-{
-  calendar && (
-    <article class="contributions" aria-label={`GitHub contributions for ${username}`}>
-      <div class="contribution-grid" style={`--week-count: ${calendar.weeks.length};`}>
-        {calendar.weeks.map((week) =>
-          week.map((day) =>
-            day ? (
-              <span class={`cell level-${day.level}`} title={day.label} />
-            ) : (
-              <span class="cell empty" aria-hidden="true" />
-            ),
+{calendar && (
+  <article class="contributions" aria-label={`GitHub contributions for ${username}`}>
+    <div class="contribution-grid" style={`--week-count: ${calendar.weeks.length};`}>
+      {calendar.weeks.map((week) =>
+        week.map((day) =>
+          day ? (
+            <span class={`cell level-${day.level}`} title={day.label} />
+          ) : (
+            <span class="cell empty" aria-hidden="true" />
           ),
-        )}
-      </div>
-      <a class="contribution-total" href={profileUrl} target="_blank" rel="noreferrer">
-        {calendar.total.toLocaleString('en-US')} contributions in the last year
-      </a>
-    </article>
-  )
-}
+        ),
+      )}
+    </div>
+    <a class="contribution-total" href={profileUrl} target="_blank" rel="noreferrer">
+      {calendar.total.toLocaleString('en-US')} contributions in the last year
+    </a>
+  </article>
+)}
 
 <style>
   .contributions {
