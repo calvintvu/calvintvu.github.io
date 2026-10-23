@@ -14,7 +14,7 @@ interface Props {
 
 const { name, slug, posts } = Astro.props;
 const basePath = import.meta.env.BASE_URL.replace(/\/$/, '');
-const href = `${basePath}/blog/series/${slug}/`;
+const href = `${basePath}/notes/series/${slug}/`;
 const ui = getUiText(await getSiteConfig());
 ---
 
@@ -31,7 +31,7 @@ const ui = getUiText(await getSiteConfig());
     {
       posts.slice(0, 5).map((post) => (
         <li>
-          <a href={`${basePath}/blog/${post.id}/`}>
+          <a href={`${basePath}/notes/${post.id}/`}>
             <span>{post.data.title}</span>
             <small>
               <FormattedDate date={post.data.date} />

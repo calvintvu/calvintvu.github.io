@@ -73,8 +73,8 @@ function getResultKind(root: HTMLElement, url: string) {
   const vibeRoute = root.dataset.searchRouteVibe || '/vibe';
   const projectsRoute = root.dataset.searchRouteProjects || '/projects';
 
-  if (/^\/blog\/[^/]+\/?$/.test(path)) return root.dataset.searchKindBlogNote || 'Blog note';
-  if (path.startsWith('/blog')) return root.dataset.searchKindBlogIndex || 'Blog index';
+  if (/^\/notes\/[^/]+\/?$/.test(path)) return root.dataset.searchKindBlogNote || 'Note';
+  if (path.startsWith('/notes')) return root.dataset.searchKindBlogIndex || 'Notes index';
   if (path === vibeRoute || path.startsWith(`${vibeRoute}/`)) {
     return root.dataset.searchKindVibe || 'Vibe';
   }

@@ -32,7 +32,7 @@ function withBase(href: string) {
       posts.map((post) => (
         <a
           class:list={[{ 'has-thumbnail': Boolean(post.data.heroImage) }]}
-          href={withBase(`/blog/${post.id}/`)}
+          href={withBase(`/notes/${post.id}/`)}
         >
           {post.data.heroImage && (
             <SmartImage width={88} height={64} src={post.data.heroImage} alt="" />

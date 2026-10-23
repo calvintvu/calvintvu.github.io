@@ -199,7 +199,7 @@ const hasSidebar = shouldRenderSidebar && hasToc;
                 aria-label={ui.article.moreInSeries(seriesContext.name)}
               >
                 {seriesContext.prev ? (
-                  <a href={`${basePath}/blog/${seriesContext.prev.id}/`}>
+                  <a href={`${basePath}/notes/${seriesContext.prev.id}/`}>
                     <small>{ui.article.previousInSeries(seriesContext.name)}</small>
                     <span>{seriesContext.prev.data.title}</span>
                   </a>
@@ -207,7 +207,7 @@ const hasSidebar = shouldRenderSidebar && hasToc;
                   <span />
                 )}
                 {seriesContext.next ? (
-                  <a href={`${basePath}/blog/${seriesContext.next.id}/`} class="next">
+                  <a href={`${basePath}/notes/${seriesContext.next.id}/`} class="next">
                     <small>{ui.article.nextInSeries(seriesContext.name)}</small>
                     <span>{seriesContext.next.data.title}</span>
                   </a>

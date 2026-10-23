@@ -47,7 +47,7 @@ placeholder = "Search notes..."
 maxResults = 6
 
 [config.pages.blog]
-title = "blog"
+title = "notes"
 kicker = "Notebook archive"
 postsPerPage = 6
 # date-fns date format template.
@@ -121,8 +121,8 @@ label = "home"
 href = "/"
 
 [[config.topNav.links]]
-label = "blog"
-href = "/blog"
+label = "notes"
+href = "/notes"
 
 [[config.topNav.links]]
 label = "projects"

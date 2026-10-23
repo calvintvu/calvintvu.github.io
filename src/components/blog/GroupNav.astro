@@ -39,7 +39,7 @@ function getCategoryName(name: string, slug: string) {
     <div class="topic-list" data-topic-list>
       <a
         class:list={['topic-chip', activeView === 'posts' && !activeCategory && 'is-active']}
-        href={withBase('/blog/')}
+        href={withBase('/notes/')}
       >
         <span>{ui.groups.allArticles}</span>
         <b>{posts.length}</b>
@@ -51,7 +51,7 @@ function getCategoryName(name: string, slug: string) {
               'topic-chip',
               activeView === 'posts' && activeCategory === category.slug && 'is-active',
             ]}
-            href={withBase(`/blog/categories/${category.slug}/`)}
+            href={withBase(`/notes/categories/${category.slug}/`)}
           >
             <span>{getCategoryName(category.name, category.slug)}</span>
             <b>{category.count}</b>
@@ -78,17 +78,17 @@ function getCategoryName(name: string, slug: string) {
   </div>
 
   <div class="group-links" aria-label="Blog views">
-    <a class:list={[activeView === 'series' && 'is-active']} href={withBase('/blog/series/')}>
+    <a class:list={[activeView === 'series' && 'is-active']} href={withBase('/notes/series/')}>
       <Icon name="layers" size={15} />
       {ui.groups.series}
     </a>
     <span aria-hidden="true">·</span>
-    <a class:list={[activeView === 'tags' && 'is-active']} href={withBase('/blog/tags/')}>
+    <a class:list={[activeView === 'tags' && 'is-active']} href={withBase('/notes/tags/')}>
       <Icon name="tags" size={15} />
       {ui.groups.tags}
     </a>
     <span aria-hidden="true">·</span>
-    <a class:list={[activeView === 'archives' && 'is-active']} href={withBase('/blog/archives/')}>
+    <a class:list={[activeView === 'archives' && 'is-active']} href={withBase('/notes/archives/')}>
       <Icon name="calendar" size={15} />
       {ui.groups.years}
     </a>

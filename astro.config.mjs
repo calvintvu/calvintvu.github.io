@@ -66,6 +66,10 @@ const resolvedBase =
 export default defineConfig({
   site: resolvedSite,
   base: resolvedBase,
+  redirects: {
+    '/blog': '/notes',
+    '/blog/[...slug]': '/notes/[...slug]',
+  },
   markdown: {
     remarkPlugins: astroPluginConfig.remarkPlugins,
     rehypePlugins: astroPluginConfig.rehypePlugins,

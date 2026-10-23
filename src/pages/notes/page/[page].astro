@@ -30,9 +30,9 @@ export async function getStaticPaths() {
           total: posts.length,
           size: postsPerPage,
           url: {
-            current: `/blog/page/${currentPage}/`,
-            prev: currentPage === 2 ? '/blog/' : `/blog/page/${currentPage - 1}/`,
-            next: currentPage < totalPages ? `/blog/page/${currentPage + 1}/` : undefined,
+            current: `/notes/page/${currentPage}/`,
+            prev: currentPage === 2 ? '/notes/' : `/notes/page/${currentPage - 1}/`,
+            next: currentPage < totalPages ? `/notes/page/${currentPage + 1}/` : undefined,
           },
         },
         postOffset: start,

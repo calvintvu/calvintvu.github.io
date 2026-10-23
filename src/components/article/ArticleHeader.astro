@@ -103,7 +103,7 @@ const wordCountLabel = ui.article.wordCount(wordCount);
                   <span class="group-label">{ui.groups.categories}</span>
                   <span class="group-list">
                     {categories.map((category) => (
-                      <a class="group-link" href={`${basePath}/blog/categories/${category.slug}/`}>
+                      <a class="group-link" href={`${basePath}/notes/categories/${category.slug}/`}>
                         {category.name}
                       </a>
                     ))}
@@ -116,7 +116,7 @@ const wordCountLabel = ui.article.wordCount(wordCount);
                   <span class="group-label">{ui.groups.series}</span>
                   <span class="group-list">
                     {series.map((item) => (
-                      <a class="group-link" href={`${basePath}/blog/series/${item.slug}/`}>
+                      <a class="group-link" href={`${basePath}/notes/series/${item.slug}/`}>
                         {item.name}
                         {item.current && item.total ? ` ${item.current}/${item.total}` : ''}
                       </a>
@@ -169,7 +169,7 @@ const wordCountLabel = ui.article.wordCount(wordCount);
                 <span class="group-label">{ui.groups.categories}</span>
                 <span class="group-list">
                   {categories.map((category) => (
-                    <a class="group-link" href={`${basePath}/blog/categories/${category.slug}/`}>
+                    <a class="group-link" href={`${basePath}/notes/categories/${category.slug}/`}>
                       {category.name}
                     </a>
                   ))}
@@ -182,7 +182,7 @@ const wordCountLabel = ui.article.wordCount(wordCount);
                 <span class="group-label">{ui.groups.series}</span>
                 <span class="group-list">
                   {series.map((item) => (
-                    <a class="group-link" href={`${basePath}/blog/series/${item.slug}/`}>
+                    <a class="group-link" href={`${basePath}/notes/series/${item.slug}/`}>
                       {item.name}
                       {item.current && item.total ? ` ${item.current}/${item.total}` : ''}
                     </a>

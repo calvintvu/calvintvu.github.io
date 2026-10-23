@@ -22,7 +22,7 @@ export async function GET(context) {
           ...(post.data.series ?? []),
         ]),
       ],
-      link: `/blog/${post.id}/`,
+      link: `/notes/${post.id}/`,
     })),
   });
 }

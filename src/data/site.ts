@@ -111,7 +111,7 @@ export function resolveTopNavLinks(
 
 export function getRouteLabels(): Record<string, string> {
   const routeLabels: Record<string, string> = {
-    '/blog': 'blog',
+    '/notes': 'notes',
     '/archive': 'archive',
     '/about': 'about',
   };

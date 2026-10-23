@@ -45,7 +45,7 @@ function withBase(href: string) {
             `cover-style-${coverImageStyle}`,
             { 'without-thumb': !post.data.heroImage },
           ]}
-          data-archive-post-href={withBase(`/blog/${post.id}/`)}
+          data-archive-post-href={withBase(`/notes/${post.id}/`)}
         >
           <div class="post-copy">
             <div>
@@ -56,7 +56,7 @@ function withBase(href: string) {
                   </span>
                   <ChevronsRight class="post-index-icon" size={20} strokeWidth={1.9} />
                 </span>
-                <a class="title-link" href={withBase(`/blog/${post.id}/`)}>
+                <a class="title-link" href={withBase(`/notes/${post.id}/`)}>
                   {post.data.title}
                 </a>
                 {isStickyEntry(post) && (
@@ -76,7 +76,7 @@ function withBase(href: string) {
                     {post.data.categories.map((category) => (
                       <a
                         class="post-group"
-                        href={withBase(`/blog/categories/${slugifyGroupName(category)}/`)}
+                        href={withBase(`/notes/categories/${slugifyGroupName(category)}/`)}
                       >
                         {category}
                       </a>
@@ -89,7 +89,7 @@ function withBase(href: string) {
                     {post.data.series.map((series) => (
                       <a
                         class="post-group"
-                        href={withBase(`/blog/series/${slugifyGroupName(series)}/`)}
+                        href={withBase(`/notes/series/${slugifyGroupName(series)}/`)}
                       >
                         {series}
                       </a>
@@ -110,7 +110,11 @@ function withBase(href: string) {
             <p class="post-excerpt">{post.data.description}</p>
           </div>
           {post.data.heroImage && (
-            <a class="thumb-wrap" href={withBase(`/blog/${post.id}/`)} aria-label={post.data.title}>
+            <a
+              class="thumb-wrap"
+              href={withBase(`/notes/${post.id}/`)}
+              aria-label={post.data.title}
+            >
               <SmartImage width={520} height={360} src={post.data.heroImage} alt="" />
             </a>
           )}
