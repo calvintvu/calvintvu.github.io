@@ -1,11 +1,11 @@
 {
-  "name": "navfolio",
-  "short_name": "navfolio",
-  "description": "A personal navigation portfolio starter built with Astro.",
+  "name": "calvintvu",
+  "short_name": "calvintvu",
+  "description": "Calvin Vu's personal site: notes, projects, and media.",
   "start_url": ".",
   "display": "standalone",
-  "background_color": "#ffffff",
-  "theme_color": "#ffffff",
+  "background_color": "#141a1a",
+  "theme_color": "#141a1a",
   "icons": [
     {
       "src": "/android-icon-36x36.png",
