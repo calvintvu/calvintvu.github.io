@@ -1,6 +1,6 @@
 ---
 title: 'autosampler'
-description: 'Web app that generates variations of drum samples with an audio-to-audio model, plus text-to-audio generation.'
+description: 'web app that generates variations of drum samples with an audio-to-audio model, plus text-to-audio generation'
 date: '2025-03-03T12:00:00-08:00'
 draft: false
 showHeroImage: false
@@ -9,16 +9,13 @@ authors:
   - name: 'calvintvu'
     url: 'https://github.com/calvintvu'
 links:
-  - label: 'GitHub'
+  - label: 'repo'
     href: 'https://github.com/calvintvu/autosampler'
     kind: github
-  - label: 'Demo'
-    href: 'https://autosampler.onrender.com'
-    kind: demo
 tags:
-  - React
-  - FastAPI
-  - PyTorch
+  - javascript
+  - python
+  - ml
 comments: false
 sidebar:
   enable: false

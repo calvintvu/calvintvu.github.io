@@ -2,7 +2,7 @@
 title = "calvintvu"
 description = "Calvin Vu's personal site."
 pageTitle = "Calvin Vu"
-pageDescription = "Calvin Vu's personal site: notes, projects, and writing."
+pageDescription = "Calvin Vu's personal site: notes, projects, and media."
 url = "https://calvintvu.github.io"
 repository = "https://github.com/calvintvu/calvintvu.github.io"
 footerNote = ""
@@ -76,7 +76,7 @@ note = "A compact shelf for implementation choices, releases, and publishing exp
 
 [config.pages.media]
 title = "media"
-subtitle = "i love to produce edm and edit content. please check out my music and videos!"
+subtitle = "please check out my music and videos!"
 note = "Singles I've released and videos from my travels."
 
 [config.comments.giscus]
