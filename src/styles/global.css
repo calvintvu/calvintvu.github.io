@@ -8,3 +8,9 @@ html:root {
     var(--font-config-en), var(--font-config-zh-subset), var(--font-config-zh), 'PingFang SC',
     'Microsoft YaHei', system-ui, sans-serif;
 }
+
+/* Anchors the footer's ascii backdrop to the page bottom and keeps it above the body background. */
+body {
+  position: relative;
+  isolation: isolate;
+}

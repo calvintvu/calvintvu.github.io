@@ -1,5 +1,4 @@
 ---
-import AsciiBackdrop from '../components/AsciiBackdrop.astro';
 import AsciiScene from '../components/AsciiScene.astro';
 import ConnectCard from '../components/cards/ConnectCard.astro';
 import IntroCard from '../components/cards/IntroCard.astro';
@@ -31,8 +30,4 @@ const { home, profile, site } = await getSiteConfig();
       <ConnectCard links={home.links} />
     </Fragment>
   </DashboardFlow>
-
-  <Fragment slot="backdrop">
-    <AsciiBackdrop />
-  </Fragment>
 </BaseLayout>

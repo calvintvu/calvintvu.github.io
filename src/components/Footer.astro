@@ -1,6 +1,7 @@
 ---
 import { Compass, Github, Linkedin, Mail } from 'lucide-astro';
 import { getSiteConfig } from '../data/site';
+import AsciiBackdrop from './AsciiBackdrop.astro';
 
 const { profile, site } = await getSiteConfig();
 const year = new Date().getFullYear();
@@ -32,9 +33,26 @@ const year = new Date().getFullYear();
       <Mail size={18} stroke-width={1.9} aria-hidden="true" focusable="false" />
     </a>
   </div>
+  <div class="page-backdrop" data-pagefind-ignore>
+    <AsciiBackdrop />
+  </div>
 </footer>
 
 <style>
+  .page-backdrop {
+    position: absolute;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    z-index: -1;
+    height: 420px;
+    pointer-events: none;
+  }
+
+  .page-backdrop :global(.ascii-backdrop) {
+    height: 100%;
+  }
+
   footer {
     padding: 3em 1em 6em;
     color: var(--paper-ink-faint);

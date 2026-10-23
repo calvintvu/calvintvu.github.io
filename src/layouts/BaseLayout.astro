@@ -16,7 +16,6 @@ const { title, description } = Astro.props;
 const siteConfig = await getSiteConfig();
 const palette = siteConfig.theme.palette;
 const htmlLang = getHtmlLang(siteConfig);
-const hasBackdrop = Astro.slots.has('backdrop');
 ---
 
 <ThemeBaseLayout htmlLang={htmlLang} palette={palette}>
@@ -29,13 +28,6 @@ const hasBackdrop = Astro.slots.has('backdrop');
   <div class="page-frame">
     <slot />
     <Footer />
-    {
-      hasBackdrop && (
-        <div class="page-backdrop" data-pagefind-ignore>
-          <slot name="backdrop" />
-        </div>
-      )
-    }
   </div>
   <Fragment slot="after-content">
     <ScrollToTopButton />
@@ -53,19 +45,5 @@ const hasBackdrop = Astro.slots.has('backdrop');
 
   .page-frame > :global(main) {
     flex: 1 0 auto;
-  }
-
-  .page-backdrop {
-    position: absolute;
-    right: 0;
-    bottom: 0;
-    left: 0;
-    z-index: -1;
-    height: 420px;
-    pointer-events: none;
-  }
-
-  .page-backdrop :global(.ascii-backdrop) {
-    height: 100%;
   }
 </style>
